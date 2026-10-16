@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Corporate Banking PMO Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@600&display=swap">
+<script>
+  /* ============================================================
+     GANTI baris di bawah dengan URL Web App dari Apps Script
+     (Deploy → Manage deployments → salin "Web app URL").
+     Contoh: https://script.google.com/macros/s/AKfy.../exec
+     ============================================================ */
+  const APP_URL = "PASTE_WEB_APP_URL_DI_SINI";
+</script>
+<style>
+:root{--bg:#EDF0F4;--card:#FFFFFF;--ink:#0F1B2B;--muted:#566376;--line:#DCE1E8;--accent:#0E6390;--accent-ink:#FFFFFF;--band:#0F1B2B;--warn:#B47400;--warn-soft:#FAEFD8}
+@media (prefers-color-scheme:dark){:root{--bg:#0A111B;--card:#111B27;--ink:#E5EBF2;--muted:#9AA8B9;--line:#223142;--accent:#4BA6D6;--accent-ink:#06121C;--band:#060B12;--warn:#E5A83A;--warn-soft:#3A2C10;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column}
+.band{background:var(--band);color:#E8EDF4;padding:18px 20px}
+.band .in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.mark{width:34px;height:34px;border-radius:8px;background:#0E6390;display:grid;place-items:center;flex:none}
+.band h1{margin:0;font:600 17px "Sora",system-ui,sans-serif}
+.band p{margin:0;font-size:12px;color:#93A2B6}
+main{flex:1;display:grid;place-items:center;padding:32px 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px;max-width:560px;width:100%}
+.card h2{margin:0 0 8px;font:600 22px "Sora",system-ui,sans-serif;text-wrap:balance}
+.card p{margin:0 0 14px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-weight:600;padding:11px 18px;border-radius:8px}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+ul{margin:16px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+li+li{margin-top:6px}
+.note{margin-top:18px;padding:10px 12px;border-radius:8px;background:var(--warn-soft);color:var(--warn);font-size:13.5px}
+footer{text-align:center;font-size:12px;color:var(--muted);padding:16px}
+</style>
+</head>
+<body>
+<header class="band"><div class="in">
+  <div class="mark" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10M19 21V10M9 21v-7M15 21v-7M2 10l10-6 10 6"/></svg></div>
+  <div><h1>Corporate Banking PMO Desk</h1><p>Portofolio proyek · vendor · meeting · risiko</p></div>
+</div></header>
+<main>
+  <div class="card" id="card">
+    <h2>Membuka PMO Desk…</h2>
+    <p>Anda akan diarahkan ke dashboard. Login dengan akun Google yang sudah diberi akses oleh PMO.</p>
+    <a class="btn" id="go" href="#">Buka dashboard</a>
+    <ul>
+      <li>Pertama kali membuka, Google akan meminta izin akses ke Google Sheet dan folder dokumen PMO. Klik <b>Allow</b>.</li>
+      <li>Jika muncul pesan "Anda belum punya akses", minta PMO membagikan Google Sheet dan folder dokumen ke email Anda.</li>
+    </ul>
+  </div>
+</main>
+<footer>Data proyek tersimpan di Google Sheets dan Google Drive milik tim PMO, bukan di GitHub.</footer>
+<script>
+(function(){
+  var ok = /^https:\/\/script\.google\.com\/(a\/[^/]+\/)?macros\/s\/[\w-]+\/exec/.test(APP_URL);
+  var go = document.getElementById('go');
+  if (!ok) {
+    document.getElementById('card').innerHTML =
+      '<h2>Alamat dashboard belum diatur</h2>' +
+      '<p>Pemilik repository perlu mengisi <b>APP_URL</b> di file <code>docs/index.html</code> dengan URL Web App dari Google Apps Script.</p>' +
+      '<div class="note">Lihat langkah 7 di README.md.</div>';
+    return;
+  }
+  go.href = APP_URL;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(function(){ window.location.replace(APP_URL); }, reduce ? 0 : 1200);
+})();
+</script>
+</body>
+</html>
