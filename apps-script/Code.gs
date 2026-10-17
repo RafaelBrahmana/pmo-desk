@@ -27,9 +27,11 @@ const SCHEMA = {
   vendors:    { sheet: 'Vendor',    fields: ['id', 'name', 'category', 'status', 'projectId', 'contractValue', 'contractEnd', 'pic', 'contact', 'rating', 'notes'] },
   documents:  { sheet: 'Dokumen',   fields: ['id', 'vendorId', 'projectId', 'name', 'docType', 'note', 'fileId', 'size', 'contentType', 'uploadedAt'] },
   risks:      { sheet: 'Risiko',    fields: ['id', 'projectId', 'category', 'title', 'impact', 'likelihood', 'status', 'owner', 'due', 'mitigation'] },
+  chat:       { sheet: 'Chat',      fields: ['id', 'ts', 'author', 'text', 'topic', 'kind', 'status'], auto: true, guarded: true },
   decks:      { sheet: 'Deck',      fields: ['id', 'title', 'category', 'status', 'projectId', 'date', 'version', 'audience', 'owner', 'kind', 'url', 'fileId', 'name', 'size', 'contentType', 'description'], auto: true },
 };
 const META_FIELDS = ['example', 'updatedAt', 'updatedBy'];
+const CHAT_MAX_LEN = 2000;
 const NUMERIC = ['progress', 'budget', 'spent', 'duration', 'contractValue', 'rating', 'impact', 'likelihood', 'size'];
 
 let WHO_ = '';
@@ -132,6 +134,8 @@ function doPost(e) {
     getAll: getAll, saveItem: saveItem, deleteItems: deleteItems, deleteProject: deleteProject,
     clearExamples: clearExamples, uploadDocument: uploadDocument, getFile: getFile,
     uploadDeck: uploadDeck, getDeckFile: getDeckFile,
+    checkAdmin: function (p) { adminAuth_(p); return true; },
+    getChat: getChat, postChat: postChat, setChatStatus: setChatStatus, deleteChat: deleteChat, clearChat: clearChat,
   };
   const fn = routes[body.action];
   if (!fn) return json_({ ok: false, code: 'BAD_REQUEST', error: 'Aksi tidak dikenal.' });
@@ -139,7 +143,7 @@ function doPost(e) {
     const args = Array.isArray(body.args) ? body.args : [];
     return json_({ ok: true, data: fn.apply(null, args) });
   } catch (err) {
-    return json_({ ok: false, code: 'ERROR', error: String((err && err.message) || err).replace(/^Exception:\s*/, '') });
+    return json_({ ok: false, code: (err && err.code) || 'ERROR', error: String((err && err.message) || err).replace(/^Exception:\s*/, '') });
   }
 }
 
@@ -154,13 +158,13 @@ function json_(o) {
 function getAll() {
   const ss = ss_();
   const out = {};
-  Object.keys(SCHEMA).forEach(function (c) { out[c] = readCol_(ss, c); });
+  Object.keys(SCHEMA).forEach(function (c) { if (!SCHEMA[c].guarded) out[c] = readCol_(ss, c); });
   out.meta = { serverTime: new Date().toISOString() };
   return out;
 }
 
 function saveItem(col, item) {
-  checkCol_(col);
+  checkCol_(col); checkOpen_(col);
   if (!item || typeof item !== 'object') throw new Error('Data tidak valid.');
   return withLock_(function (ss) { writeItem_(ss, col, item); });
 }
@@ -170,7 +174,7 @@ function deleteItems(list) {
   if (!Array.isArray(list) || !list.length) throw new Error('Tidak ada data yang dihapus.');
   return withLock_(function (ss) {
     const byCol = {};
-    list.forEach(function (x) { checkCol_(x.col); (byCol[x.col] = byCol[x.col] || []).push(String(x.id)); });
+    list.forEach(function (x) { checkCol_(x.col); checkOpen_(x.col); (byCol[x.col] = byCol[x.col] || []).push(String(x.id)); });
     if (byCol.vendors) {
       const docs = readCol_(ss, 'documents').filter(function (d) { return byCol.vendors.indexOf(String(d.vendorId)) >= 0; });
       byCol.documents = (byCol.documents || []).concat(docs.map(function (d) { return d.id; }));
@@ -199,6 +203,7 @@ function deleteProject(projectId) {
 function clearExamples() {
   return withLock_(function (ss) {
     Object.keys(SCHEMA).forEach(function (c) {
+      if (SCHEMA[c].guarded) return;
       const rows = readCol_(ss, c).filter(function (x) { return x.example === true; });
       if (!rows.length) return;
       if (c === 'documents') trashFiles_(rows);
@@ -246,6 +251,95 @@ function uploadDeck(meta, b64) {
     ['id', 'title', 'category', 'status', 'projectId', 'date', 'version', 'audience', 'owner', 'description'].forEach(function (k) { if (k in meta) row[k] = meta[k]; });
     writeItem_(ss, 'decks', row);
   });
+}
+
+/* ---------------- Diskusi & revisi (chat tim) ---------------- */
+
+function chatMark_() {
+  const now = new Date().toISOString();
+  PropertiesService.getScriptProperties().setProperty('CHAT_TS', now);
+  return now;
+}
+
+/** since: ISO waktu terakhir yang sudah dimiliki browser. Mengembalikan pesan yang baru/berubah setelah itu. */
+function getChat(since) {
+  const props = PropertiesService.getScriptProperties();
+  const last = props.getProperty('CHAT_TS') || '';
+  const cleared = props.getProperty('CHAT_CLEARED') || '';
+  since = String(since || '');
+  if (since && last && since >= last) return { msgs: [], last: last, cleared: cleared };
+  const msgs = readCol_(ss_(), 'chat').filter(function (m) { return !since || String(m.updatedAt || m.ts) > since; });
+  return { msgs: msgs, last: last || new Date().toISOString(), cleared: cleared };
+}
+
+/** m: {text, topic, kind: 'msg'|'revisi'} — penulis diambil dari nama yang login. */
+function postChat(m) {
+  if (!m || typeof m !== 'object') throw new Error('Pesan tidak valid.');
+  const text = String(m.text || '').trim();
+  if (!text) throw new Error('Pesan kosong.');
+  if (text.length > CHAT_MAX_LEN) throw new Error('Pesan terlalu panjang (maks ' + CHAT_MAX_LEN + ' karakter).');
+  const kind = m.kind === 'revisi' ? 'revisi' : 'msg';
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Server sedang sibuk. Coba kirim lagi.');
+  try {
+    const ss = ss_();
+    const id = writeItem_(ss, 'chat', { ts: new Date().toISOString(), author: WHO_ || 'Tanpa nama', text: text, topic: String(m.topic || '').slice(0, 80), kind: kind, status: kind === 'revisi' ? 'Open' : '', example: false });
+    SpreadsheetApp.flush();
+    chatMark_();
+    return readCol_(ss, 'chat').filter(function (x) { return x.id === id; })[0];
+  } finally { lock.releaseLock(); }
+}
+
+function setChatStatus(id, status) {
+  if (['Open', 'Selesai'].indexOf(status) < 0) throw new Error('Status tidak dikenal.');
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Server sedang sibuk. Coba lagi.');
+  try {
+    const ss = ss_();
+    const msg = readCol_(ss, 'chat').filter(function (x) { return String(x.id) === String(id); })[0];
+    if (!msg || msg.kind !== 'revisi') throw new Error('Catatan revisi tidak ditemukan.');
+    writeItem_(ss, 'chat', { id: msg.id, status: status });
+    SpreadsheetApp.flush();
+    chatMark_();
+    return true;
+  } finally { lock.releaseLock(); }
+}
+
+function adminAuth_(pass) {
+  // Password admin disimpan di Project Settings → Script Properties → ADMIN_PASSWORD (tidak ditulis di kode).
+  const want = PropertiesService.getScriptProperties().getProperty('ADMIN_PASSWORD');
+  if (!want) { const e = new Error('Password admin belum diatur. Tambahkan ADMIN_PASSWORD di Script Properties Apps Script.'); e.code = 'ADMIN_AUTH'; throw e; }
+  if (String(pass || '') !== want) { const e = new Error('Password admin salah.'); e.code = 'ADMIN_AUTH'; throw e; }
+}
+
+/** Admin: sembunyikan satu pesan (isi dihapus, jejak tetap). */
+function deleteChat(pass, id) {
+  adminAuth_(pass);
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Server sedang sibuk. Coba lagi.');
+  try {
+    const ss = ss_();
+    if (!readCol_(ss, 'chat').some(function (x) { return String(x.id) === String(id); })) throw new Error('Pesan tidak ditemukan.');
+    writeItem_(ss, 'chat', { id: String(id), text: '', status: 'Dihapus' });
+    SpreadsheetApp.flush();
+    chatMark_();
+    return true;
+  } finally { lock.releaseLock(); }
+}
+
+/** Admin: bersihkan seluruh percakapan. */
+function clearChat(pass) {
+  adminAuth_(pass);
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Server sedang sibuk. Coba lagi.');
+  try {
+    const sh = sheet_(ss_(), 'chat');
+    if (sh.getLastRow() > 1) sh.deleteRows(2, sh.getLastRow() - 1);
+    SpreadsheetApp.flush();
+    const now = chatMark_();
+    PropertiesService.getScriptProperties().setProperty('CHAT_CLEARED', now);
+    return { cleared: now };
+  } finally { lock.releaseLock(); }
 }
 
 function getDeckFile(id) {
@@ -330,6 +424,10 @@ function sheet_(ss, col) {
     sh.setFrozenRows(1);
   }
   return sh;
+}
+
+function checkOpen_(col) {
+  if (SCHEMA[col].guarded) throw new Error('Data ini hanya bisa diubah dari fitur Diskusi.');
 }
 
 function checkCol_(col) {

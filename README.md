@@ -68,6 +68,13 @@ Kirim alamat website dan **kode akses tim** ke anggota tim. Mereka cukup mengisi
 - Tab **Deck & PPT** menyimpan deck yang sudah dibuat: file PDF/PPT/PPTX (maks 20 MB, masuk folder `CIMB NIAGA PM` dengan awalan `Deck –`) atau link (Google Slides, Canva, PowerPoint online).
 - Setiap deck punya tanggal, status (Draft, Review, Final, Dipresentasikan), kategori, versi, audiens, dan pembuat; dikelompokkan per bulan dan bisa dicari/difilter.
 
+## Diskusi & revisi (chat tim)
+
+- Tombol chat di kanan bawah membuka panel **Diskusi & revisi**. Pesan baru muncul ±4 detik saat panel terbuka, dan ada badge jumlah pesan belum dibaca saat panel tertutup.
+- Jenis entri: **Pesan** untuk sharing, atau **Revisi** dengan status *Open* / *Selesai* yang bisa diubah siapa pun di tim.
+- Topik: *Umum*, per proyek (tombol **Diskusikan** di detail proyek), atau per deck (ikon chat di kartu deck). Link yang ditempel otomatis bisa diklik.
+- Semua pesan tersimpan permanen di sheet `Chat`. Yang bisa menghapus pesan atau **mengosongkan chat** hanya admin. Caranya: Apps Script → ⚙ **Project Settings → Script Properties** → tambahkan `ADMIN_PASSWORD`, lalu di panel chat klik ikon perisai dan masukkan password tersebut.
+
 ## Keamanan
 
 - Alamat website bersifat publik, tetapi data hanya bisa dibuka dengan **kode akses tim**. Tanpa kode, server menolak semua permintaan.
