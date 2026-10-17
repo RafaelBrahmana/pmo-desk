@@ -131,6 +131,38 @@ body.pre-auth .band-top{padding-block:16px 16px}
 .auth-go{justify-content:center;padding:12px;border-radius:10px;font-size:14px}
 .auth-note{margin:0;display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--faint)}
 .auth-note svg{width:15px;height:15px;flex:none;margin-top:1px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* Octo mascot (login) */
+.octo-stage{display:flex;align-items:center;gap:16px;margin:-6px 0 2px}
+.octo{position:relative;width:132px;height:132px;flex:none;--lx:0}
+.octo-fig{position:absolute;inset:0 0 10px;animation:octoFloat 3.6s ease-in-out infinite}
+.octo-look{position:absolute;inset:0;transform:rotate(calc(var(--lx)*7deg)) translateX(calc(var(--lx)*4px));transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.octo-lean{position:absolute;inset:0;transform-origin:50% 92%;transition:transform .45s cubic-bezier(.34,1.56,.64,1)}
+.octo img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;opacity:0;transform:scale(.84) translateY(8px);transition:opacity .2s ease,transform .5s cubic-bezier(.34,1.56,.64,1);filter:drop-shadow(0 6px 10px rgba(120,0,10,.16));user-select:none;-webkit-user-drag:none;pointer-events:none}
+.octo img.on{opacity:1;transform:none}
+.octo-shadow{position:absolute;left:50%;bottom:2px;width:74px;height:12px;margin-left:-37px;border-radius:50%;background:radial-gradient(closest-side,rgba(60,0,8,.28),transparent);animation:octoShadow 3.6s ease-in-out infinite}
+.octo-fx{position:absolute;left:50%;top:38%;width:0;height:0;pointer-events:none}
+.octo-fx b{position:absolute;width:7px;height:11px;border-radius:2px;background:var(--c);opacity:0;animation:octoConf 1.15s cubic-bezier(.16,.84,.44,1) forwards;animation-delay:var(--d)}
+.octo[data-st="idle"] .octo-lean,.octo[data-st="name"] .octo-lean{animation:octoHi 4.6s ease-in-out infinite}
+.octo[data-st="key"] .octo-lean{transform:rotate(-7deg) translateX(-3px)}
+.octo[data-st="peek"] .octo-lean{transform:scale(1.04) translateY(-2px)}
+.octo[data-st="busy"] .octo-fig{animation:octoBusy .9s ease-in-out infinite}
+.octo.fx[data-st="err"] .octo-lean{animation:octoNo .6s ease-in-out}
+.octo.fx[data-st="ok"] .octo-fig{animation:octoJump .95s cubic-bezier(.3,.7,.4,1)}
+.octo.fx[data-st="ok"] .octo-shadow{animation:octoJumpSh .95s cubic-bezier(.3,.7,.4,1)}
+.octo-say{position:relative;max-width:240px;padding:10px 14px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line);font-size:13px;line-height:1.45;color:var(--ink);font-weight:500;transform-origin:0 50%}
+.octo-say::before{content:"";position:absolute;left:-6px;top:50%;width:10px;height:10px;margin-top:-5px;background:inherit;border-left:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
+.octo-say.pop{animation:octoSay .42s cubic-bezier(.34,1.56,.64,1)}
+@keyframes octoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes octoShadow{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.8);opacity:.6}}
+@keyframes octoHi{0%,62%,100%{transform:rotate(0)}68%{transform:rotate(-6deg)}74%{transform:rotate(5deg)}80%{transform:rotate(-4deg)}86%{transform:rotate(2deg)}92%{transform:rotate(0)}}
+@keyframes octoBusy{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-4px) rotate(2deg)}}
+@keyframes octoNo{0%,100%{transform:translateX(0)}15%{transform:translateX(-9px) rotate(-5deg)}35%{transform:translateX(8px) rotate(4deg)}55%{transform:translateX(-6px) rotate(-3deg)}75%{transform:translateX(3px)}}
+@keyframes octoJump{0%{transform:translateY(0) scale(1)}14%{transform:translateY(4px) scale(1.08,.9)}44%{transform:translateY(-34px) scale(.95,1.06)}70%{transform:translateY(0) scale(1.06,.93)}84%{transform:translateY(-6px) scale(1)}100%{transform:translateY(0)}}
+@keyframes octoJumpSh{0%,100%{transform:scale(1)}44%{transform:scale(.55);opacity:.4}70%{transform:scale(1.1)}}
+@keyframes octoConf{0%{opacity:1;transform:translate(0,0) rotate(0)}70%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r))}}
+@keyframes octoSay{0%{opacity:0;transform:scale(.88) translateX(-6px)}100%{opacity:1;transform:none}}
+@media (max-width:560px){.octo{width:96px;height:96px}.octo-shadow{width:58px;margin-left:-29px}.octo-say{font-size:12.5px}.octo-stage{gap:12px}}
+@media (prefers-reduced-motion:reduce){.octo-fig,.octo-shadow,.octo-lean,.octo-say.pop,.octo.fx .octo-fig,.octo.fx .octo-lean,.octo.fx .octo-shadow{animation:none!important}.octo-look{transition:none;transform:none}.octo-fx{display:none}}
 @media (max-width:900px){.auth{grid-template-columns:1fr;margin-top:12px}.auth-hero{padding:32px 28px 26px}.auth-card{padding:32px 28px}}
 @media (max-width:560px){.auth-feat,.auth-date{display:none}.auth-hero{padding:26px 22px}.auth-card{padding:26px 22px}.auth{border-radius:14px}}
 .err{color:var(--r);font-size:13px;min-height:1.2em}
@@ -751,12 +783,12 @@ async function call(fn,...args){busy++;const t0=Date.now(),lbl=/^upload/.test(fn
   const stop=()=>{clearTimeout(slow);clearInterval(iv)};
   try{applyData(await B[fn](...args));stop();return true}catch(e){stop();toast(e.message,true);if(e.code==='AUTH')logout(e.message);return false}finally{busy--}}
 async function login(ev){ev.preventDefault();const f=ev.target;const name=f.elements['lg-name'].value.trim(),key=f.elements['lg-key'].value.trim().toUpperCase();
-  const er=$('#lg-err');if(!name||!key){er.textContent='Isi nama dan kode akses.';return}
-  const btn=f.querySelector('[type=submit]');btn.disabled=true;btn.textContent='Menghubungkan ke Google…';er.textContent='';
+  const er=$('#lg-err');if(!name||!key){er.textContent='Isi nama dan kode akses.';Octo.set('err',!name?'Namanya diisi dulu, ya.':'Kode aksesnya belum diisi.');return}
+  const btn=f.querySelector('[type=submit]');btn.disabled=true;btn.textContent='Menghubungkan ke Google…';er.textContent='';Octo.set('busy','Sebentar, saya cek dulu ke server…');
   const hint=setTimeout(()=>{const e2=$('#lg-err');if(e2&&!e2.textContent)e2.innerHTML='<span class="muted">Server Google sedang disiapkan. Login pertama biasanya 5–15 detik; berikutnya dashboard langsung terbuka.</span>'},3500);
   SESSION.name=name;SESSION.key=key;
-  try{const d=await B.getAll();clearTimeout(hint);lsSet('pmo.name',name);lsSet('pmo.key',key);errMsg='';applyData(d);startPolling();toast('Selamat datang, '+name)}
-  catch(e){clearTimeout(hint);SESSION.key='';const e2=$('#lg-err');if(e2)e2.textContent=e.message;btn.disabled=false;btn.textContent='Masuk'}}
+  try{const d=await B.getAll();clearTimeout(hint);lsSet('pmo.name',name);lsSet('pmo.key',key);errMsg='';btn.textContent='Berhasil masuk';Octo.set('ok',`Berhasil! Selamat bekerja, ${Octo.first(name)}.`);await Octo.done();applyData(d);startPolling();toast('Selamat datang, '+name)}
+  catch(e){clearTimeout(hint);SESSION.key='';const e2=$('#lg-err');if(e2)e2.textContent=e.message;btn.disabled=false;btn.textContent='Masuk';Octo.set('err',e.code==='AUTH'?'Hmm, kodenya belum cocok. Coba cek lagi, ya.':'Ada kendala saat masuk. Coba lagi sebentar lagi.')}}
 const ICON={
   port:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
   time:'<path d="M3 6h11M3 12h18M3 18h8"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/>',
@@ -777,6 +809,30 @@ const ICON={
   shield:'<path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/>'};
 const ic=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
 function greeting(h){return h<4?'Selamat malam':h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam'}
+const Octo={
+  POSES:['wave','wink','cheer','phone'],MAP:{idle:'wave',name:'wave',key:'wink',peek:'wave',busy:'phone',err:'wave',ok:'cheer'},
+  reduced:()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches,
+  first:n=>(n||'').trim().split(/\s+/)[0],
+  idleText(){const n=this.first(SESSION.name);return n?`Halo lagi, ${n}! Masukkan kode akses untuk lanjut.`:'Halo, saya Octo! Yuk, masuk dulu ke dashboard.'},
+  html(){return`<div class="octo-stage"><div class="octo" id="octo" data-st="idle" aria-hidden="true"><i class="octo-shadow"></i><div class="octo-fig"><div class="octo-look"><div class="octo-lean">${this.POSES.map(p=>`<img src="octo/${p}.webp" alt="" data-p="${p}" draggable="false"${p==='wave'?' class="on"':''}>`).join('')}</div></div><i class="octo-fx"></i></div></div><div class="octo-say" id="octo-say" aria-live="polite">${esc(this.idleText())}</div></div>`},
+  set(st,txt){const r=$('#octo');if(!r)return;const pose=this.MAP[st]||'wave';
+    r.querySelectorAll('img').forEach(i=>i.classList.toggle('on',i.dataset.p===pose));r.dataset.st=st;
+    if(st==='err'||st==='ok'){r.classList.remove('fx');void r.offsetWidth;r.classList.add('fx')}
+    if(st==='ok'&&!this.reduced())this.confetti();
+    const s=$('#octo-say');if(s&&txt&&s.textContent!==txt){s.textContent=txt;s.classList.remove('pop');void s.offsetWidth;s.classList.add('pop')}},
+  confetti(){const fx=$('#octo .octo-fx');if(!fx)return;const C=['#d71920','#f5b301','#14a99a','#7a0010','#2f6fde','#f28c28'];let h='';
+    for(let i=0;i<18;i++){const a=(-160+Math.random()*140)*Math.PI/180,d=60+Math.random()*60;h+=`<b style="--c:${C[i%C.length]};--x:${Math.round(Math.cos(a)*d)}px;--y:${Math.round(Math.sin(a)*d+30)}px;--r:${Math.round(Math.random()*540-270)}deg;--d:${(Math.random()*.12).toFixed(2)}s"></b>`}
+    fx.innerHTML=h;setTimeout(()=>{fx.innerHTML=''},1400)},
+  form(){const f=$('#login-form');if(!f)return;const nm=f.elements['lg-name'],ky=f.elements['lg-key'];
+    const onName=()=>{const n=this.first(nm.value);this.set('name',n?`Hai, ${n}! Senang bertemu dengan Anda.`:'Halo, saya Octo! Tulis nama Anda dulu, ya.')};
+    nm.addEventListener('focus',onName);nm.addEventListener('input',onName);
+    const onKey=()=>this.set(ky.type==='password'?'key':'peek',ky.type==='password'?'Tenang, kodenya tidak saya intip.':'Psst… pastikan tidak ada yang melihat layar Anda.');
+    ky.addEventListener('focus',onKey);ky.addEventListener('input',()=>{if(ky.value.trim().length>=14)this.set(ky.type==='password'?'key':'peek','Siap! Tinggal tekan Masuk.')});
+    f.addEventListener('focusout',e=>{if(f.contains(e.relatedTarget))return;setTimeout(()=>{const st=$('#octo')&&$('#octo').dataset.st;if(f.contains(document.activeElement)||st==='busy'||st==='ok'||st==='err')return;this.set('idle',nm.value.trim()&&ky.value.trim()?'Semua sudah terisi. Tinggal tekan Masuk!':this.idleText())},60)});
+    const auth=f.closest('.auth'),o=$('#octo');let raf=0;
+    if(auth&&o&&!this.reduced()&&matchMedia('(hover:hover)').matches){auth.addEventListener('pointermove',e=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const b=o.getBoundingClientRect();o.style.setProperty('--lx',Math.max(-1,Math.min(1,(e.clientX-(b.left+b.width/2))/420)).toFixed(3))})});auth.addEventListener('pointerleave',()=>o.style.setProperty('--lx','0'))}},
+  done(){return new Promise(r=>setTimeout(r,this.reduced()?450:1150))}
+};
 function vLogin(){const d=new Date();return`<section class="auth">
   <div class="auth-hero">
     <div class="auth-greet"><span id="au-greet">${greeting(d.getHours())}</span><span class="dot"></span><span id="au-time">${pad(d.getHours())}:${pad(d.getMinutes())}</span> <span id="au-tz">${tzLabel(d)}</span></div>
@@ -794,6 +850,7 @@ function vLogin(){const d=new Date();return`<section class="auth">
     <div class="auth-date" id="au-date">${HARI[d.getDay()]}, ${d.getDate()} ${MONTHS_L[d.getMonth()]} ${d.getFullYear()}</div>
   </div>
   <form class="auth-card" id="login-form" novalidate>
+    ${Octo.html()}
     <div><span class="eyebrow" style="color:var(--accent)">Akses tim</span><h3>Masuk</h3><p class="muted">Gunakan kode akses yang dibagikan oleh PMO.</p></div>
     <div class="fld"><label for="lg-name">Nama Anda</label><input id="lg-name" name="lg-name" autocomplete="name" placeholder="misal: Rafael" value="${esc(SESSION.name)}"></div>
     <div class="fld"><label for="lg-key">Kode akses tim</label><div class="pw"><input id="lg-key" name="lg-key" type="password" autocomplete="current-password" spellcheck="false" autocapitalize="characters" placeholder="••••-••••-••••" style="text-transform:uppercase;letter-spacing:.06em"><button type="button" class="pw-eye" data-act="pw-eye" aria-label="Tampilkan kode" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="slash" d="M4 4l16 16"/></svg></button></div></div>
@@ -837,7 +894,7 @@ function render(){
   renderHeader();
   const main=$('#main');
   if(storeState==='loading'){main.innerHTML=(MODE==='remote'?'<p class="muted" style="margin:0 0 14px">Memuat data dari Google Sheets tim… biasanya 5–15 detik saat pertama dibuka.</p>':'')+'<div class="skel" aria-label="Memuat data"><div></div><div style="height:140px"></div><div style="height:260px"></div></div>';return}
-  if(storeState==='login'){main.innerHTML=vLogin();const f=$('#login-form');f.addEventListener('submit',login);setTimeout(()=>{const i=SESSION.name?$('#lg-key'):$('#lg-name');i&&i.focus()},30);return}
+  if(storeState==='login'){main.innerHTML=vLogin();const f=$('#login-form');f.addEventListener('submit',login);Octo.form();setTimeout(()=>{const i=SESSION.name?$('#lg-key'):$('#lg-name');i&&i.focus()},30);return}
   if(storeState==='error'){main.innerHTML=`<div class="panel"><div class="empty"><b>Data belum bisa dimuat.</b><span>${esc(errMsg)}</span><button class="btn pri" data-act="retry">Coba lagi</button></div></div>`;return}
   const v0={overview:vOverview,projects:vProjects,timeline:vTimeline,meetings:vMeetings,vendors:vVendors,risks:vRisks,decks:vDecks};
   main.innerHTML=modeBanner()+exampleBanner()+v0[UI.tab]();
@@ -1407,7 +1464,7 @@ function setTab(k){if(storeState!=='ready')return;UI.tab=k;lsSet('pmo.tab',k);tr
 document.addEventListener('click',async e=>{
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,id=el.dataset.id,c=el.dataset.c,k=el.dataset.k;
-  if(a==='pw-eye'){const i=el.parentElement.querySelector('input'),show=i.type==='password';i.type=show?'text':'password';el.setAttribute('aria-pressed',String(show));el.setAttribute('aria-label',(show?'Sembunyikan':'Tampilkan')+(i.id==='lg-key'?' kode':' password'));i.focus();return}
+  if(a==='pw-eye'){const i=el.parentElement.querySelector('input'),show=i.type==='password';i.type=show?'text':'password';el.setAttribute('aria-pressed',String(show));el.setAttribute('aria-label',(show?'Sembunyikan':'Tampilkan')+(i.id==='lg-key'?' kode':' password'));i.focus();if(i.id==='lg-key')Octo.set(show?'peek':'key',show?'Psst… pastikan tidak ada yang melihat layar Anda.':'Tenang, kodenya tidak saya intip.');return}
   if(a==='scrim'){if(e.target===el&&!modalLock)closeModal();return}
   if(a==='tab')return setTab(k);
   if(a==='close-modal')return closeModal();
