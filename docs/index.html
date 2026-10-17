@@ -13,32 +13,32 @@
 <style>
 /* Layout: CIMB Niaga brand header (logo + maroon tab rail) over a 12-col panel grid; 12-col panel grid, summary on top, registers below */
 :root{
-  --bg:#F5F2F2; --surface:#FFFFFF; --surface-2:#F9F6F6; --ink:#1F1A1B; --muted:#6B5F61; --faint:#9A8E90;
-  --line:#E8E0E1; --line-2:#D8CCCE;
-  --band:#FFFFFF; --band-ink:#1F1A1B; --band-muted:#6B5F61; --band-line:#E8E0E1; --band-2:#F9F6F6;
-  --accent:#790008; --accent-ink:#FFFFFF; --accent-soft:#F7E6E7; --accent-2:#C2545A; --brand-red:#ED3024; --data:#3E4C5E; --logo-plate:#FFFFFF;
+  --bg:#F3F3F5; --surface:#FFFFFF; --surface-2:#F7F7F9; --ink:#2B2B2F; --muted:#6E6E75; --faint:#9D9DA3;
+  --line:#E8E8EC; --line-2:#D8D8DE; --track:#EEEEF2;
+  --band:#FFFFFF; --band-ink:#2B2B2F; --band-muted:#6E6E75; --band-line:#E8E8EC; --band-2:#F7F7F9;
+  --accent:#790008; --accent-ink:#FFFFFF; --accent-soft:#F7ECED; --accent-2:#B4474E; --brand-red:#EC1C24; --data:#56616F; --logo-plate:#FFFFFF;
   --hero-a:#8A0A12; --hero-b:#4A0207; --hero-glow:rgba(237,48,36,.45); --hero-ink:#FFFFFF; --hero-soft:rgba(255,255,255,.72); --hero-chip:rgba(255,255,255,.12); --hero-line:rgba(255,255,255,.14); --hero-ring:rgba(255,255,255,.06);
-  --g:#2B8143; --g-soft:#E2F1E6; --a:#B47400; --a-soft:#FAEFD8; --r:#D3362B; --r-soft:#FCE5E2;
-  --scrim:rgba(30,10,12,.48); --shadow:0 1px 2px rgba(60,10,14,.06),0 8px 24px rgba(60,10,14,.07);
+  --g:#2E7D52; --g-soft:#EAF4EE; --a:#A86A12; --a-soft:#FAF1E2; --r:#C62828; --r-soft:#FBECEC;
+  --scrim:rgba(20,20,24,.45); --shadow:0 1px 2px rgba(16,16,20,.04),0 6px 20px rgba(16,16,20,.05);
   --f-display:"Poppins",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-body:"Poppins",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"Poppins",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#130E0F; --surface:#1C1516; --surface-2:#241B1C; --ink:#F2EBEC; --muted:#B5A8AA; --faint:#857A7C;
-  --line:#33292A; --line-2:#47393B;
-  --band:#1C1516; --band-ink:#F2EBEC; --band-muted:#B5A8AA; --band-line:#33292A; --band-2:#241B1C;
-  --accent:#E7737A; --accent-ink:#1C0508; --accent-soft:#3D1C1F; --accent-2:#A2464C; --brand-red:#FF5A4C; --data:#A3B3C6; --logo-plate:#FFFFFF;
-  --g:#4CC07A; --g-soft:#143323; --a:#E5A83A; --a-soft:#3A2C10; --r:#FF6B5E; --r-soft:#401A17;
+  --bg:#121214; --surface:#1B1B1F; --surface-2:#222227; --ink:#EDEDF0; --muted:#A7A7AF; --faint:#76767E;
+  --line:#2C2C32; --line-2:#3B3B42; --track:#2A2A30;
+  --band:#1B1B1F; --band-ink:#EDEDF0; --band-muted:#A7A7AF; --band-line:#2C2C32; --band-2:#222227;
+  --accent:#E46A72; --accent-ink:#1A0507; --accent-soft:#3A1E22; --accent-2:#9C454B; --brand-red:#FF4B4B; --data:#A9B4C2; --logo-plate:#FFFFFF;
+  --g:#5CC489; --g-soft:#15291E; --a:#E0A64A; --a-soft:#33280F; --r:#F2706B; --r-soft:#3A1C1C;
   --scrim:rgba(0,0,0,.6); --shadow:0 1px 2px rgba(0,0,0,.3);
   color-scheme:dark;
 }}
 :root[data-theme="dark"]{
-  --bg:#130E0F; --surface:#1C1516; --surface-2:#241B1C; --ink:#F2EBEC; --muted:#B5A8AA; --faint:#857A7C;
-  --line:#33292A; --line-2:#47393B;
-  --band:#1C1516; --band-ink:#F2EBEC; --band-muted:#B5A8AA; --band-line:#33292A; --band-2:#241B1C;
-  --accent:#E7737A; --accent-ink:#1C0508; --accent-soft:#3D1C1F; --accent-2:#A2464C; --brand-red:#FF5A4C; --data:#A3B3C6; --logo-plate:#FFFFFF;
-  --g:#4CC07A; --g-soft:#143323; --a:#E5A83A; --a-soft:#3A2C10; --r:#FF6B5E; --r-soft:#401A17;
+  --bg:#121214; --surface:#1B1B1F; --surface-2:#222227; --ink:#EDEDF0; --muted:#A7A7AF; --faint:#76767E;
+  --line:#2C2C32; --line-2:#3B3B42; --track:#2A2A30;
+  --band:#1B1B1F; --band-ink:#EDEDF0; --band-muted:#A7A7AF; --band-line:#2C2C32; --band-2:#222227;
+  --accent:#E46A72; --accent-ink:#1A0507; --accent-soft:#3A1E22; --accent-2:#9C454B; --brand-red:#FF4B4B; --data:#A9B4C2; --logo-plate:#FFFFFF;
+  --g:#5CC489; --g-soft:#15291E; --a:#E0A64A; --a-soft:#33280F; --r:#F2706B; --r-soft:#3A1C1C;
   --scrim:rgba(0,0,0,.6); --shadow:0 1px 2px rgba(0,0,0,.3);
   color-scheme:dark;
 }
@@ -145,9 +145,10 @@ body.pre-auth .band-top{padding-block:16px 16px}
 .grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
 .s12{grid-column:span 12}.s8{grid-column:span 8}.s7{grid-column:span 7}.s6{grid-column:span 6}.s5{grid-column:span 5}.s4{grid-column:span 4}
 @media (max-width:1000px){.s8,.s7,.s6,.s5,.s4{grid-column:span 12}}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px;min-width:0;box-shadow:0 1px 2px rgba(16,16,20,.03)}
 .ph{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap}
-.ph h2{font-size:15px;font-weight:600}
+.ph h2{font-size:15px;font-weight:600;display:flex;align-items:center;gap:10px}
+.ph h2::before{content:"";width:4px;height:16px;border-radius:2px;background:var(--accent);flex:none}
 .ph .sub{font-size:12px;color:var(--muted)}
 .ph .end{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
@@ -167,7 +168,7 @@ body.pre-auth .band-top{padding-block:16px 16px}
 .link:hover{text-decoration:underline}
 
 /* Chips */
-.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;letter-spacing:.01em;border-radius:999px;white-space:nowrap;background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
 .chip .d{width:7px;height:7px;border-radius:50%;background:currentColor}
 .chip.g{background:var(--g-soft);color:var(--g);border-color:transparent}
 .chip.a{background:var(--a-soft);color:var(--a);border-color:transparent}
@@ -188,31 +189,40 @@ body.pre-auth .band-top{padding-block:16px 16px}
 .kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
 @media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:4px;min-width:0}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:5px;min-width:0;box-shadow:0 1px 2px rgba(16,16,20,.03)}
 .kpi .v{font-family:var(--f-display);font-size:26px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15}
 .kpi .v small{font-size:14px;color:var(--muted);font-weight:500}
 .kpi .c{font-size:12px;color:var(--muted)}
 .kpi.warn .v{color:var(--r)} .kpi.amber .v{color:var(--a)}
-.meter{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden;border:1px solid var(--line)}
+.meter{height:6px;background:var(--track);border-radius:3px;overflow:hidden}
 .meter i{display:block;height:100%;background:var(--accent)}
 
 /* Donut */
 .donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
 .donut{width:150px;height:150px;flex:none}
 .legend{display:grid;gap:10px;flex:1;min-width:160px}
+.phase{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);display:grid;gap:9px}
+.phase .eyebrow{margin-bottom:2px}
+.ph-row{display:grid;grid-template-columns:96px 1fr 24px;gap:10px;align-items:center;font-size:12.5px}
+.ph-row .num{text-align:right;color:var(--muted)}
+.ph-bar{height:6px;border-radius:3px;background:var(--track);overflow:hidden}
+.ph-bar i{display:block;height:100%;border-radius:3px;background:var(--accent)}
 .legend .row{display:grid;grid-template-columns:12px 1fr auto;gap:10px;align-items:center}
 .legend .sw{width:12px;height:12px;border-radius:3px}
 
 /* Health table */
 .tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
-td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+table{width:100%;border-collapse:separate;border-spacing:0}
+th{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:10px 12px;background:var(--surface-2);border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child{border-radius:8px 0 0 0}th:last-child{border-radius:0 8px 0 0}
+td{padding:13px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr{transition:background .12s}
 tr:last-child td{border-bottom:0}
-tr.click{cursor:pointer} tr.click:hover td{background:var(--surface-2)}
+tr.click{cursor:pointer} tbody tr:hover td{background:var(--surface-2)}
 td.r,th.r{text-align:right}
 .pname{font-weight:600;line-height:1.3}
-.pbar{position:relative;height:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;min-width:120px}
+.pbar{position:relative;height:6px;background:var(--track);border-radius:3px;min-width:120px}
 .pbar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--accent)}
 .pbar i.g{background:var(--g)} .pbar i.a{background:var(--a)} .pbar i.r{background:var(--r)}
 .pbar b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:1px}
@@ -229,11 +239,11 @@ td.r,th.r{text-align:right}
 .bud .lab{min-width:0}
 .bud .lab .code{display:block}
 .bud .lab span.n{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
-.btrack{position:relative;height:18px;background:var(--surface-2);border-radius:4px;border:1px solid var(--line)}
-.btrack .bgt{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--accent-soft)}
-.btrack .spt{position:absolute;left:0;top:4px;bottom:4px;border-radius:2px;background:var(--data)}
+.btrack{position:relative;height:14px;background:var(--track);border-radius:7px}
+.btrack .bgt{position:absolute;left:0;top:0;bottom:0;border-radius:7px;background:var(--line-2)}
+.btrack .spt{position:absolute;left:0;top:3px;bottom:3px;border-radius:4px;background:var(--data)}
 .btrack .spt.over{background:var(--r)}
-.btrack .ev{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.btrack .ev{position:absolute;top:-4px;bottom:-4px;width:2px;border-radius:1px;background:var(--accent)}
 .bmeta{font-size:12px;color:var(--muted);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap}
 .lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
 .lg span{display:inline-flex;gap:6px;align-items:center}
@@ -242,9 +252,9 @@ td.r,th.r{text-align:right}
 /* Heatmap */
 .heat{display:grid;grid-template-columns:28px repeat(5,minmax(0,1fr));gap:4px;font-size:11px}
 .heat .ax{display:grid;place-items:center;color:var(--muted);font-family:var(--f-mono)}
-.hc{aspect-ratio:1.5;border-radius:5px;display:grid;place-items:center;font-family:var(--f-mono);font-weight:600;font-size:14px;border:1px solid transparent;max-width:100%}
-.hc.lo{background:var(--g-soft);color:var(--g)} .hc.md{background:var(--a-soft);color:var(--a)} .hc.hi{background:var(--r-soft);color:var(--r)}
-.hc.zero{color:transparent}
+.hc{aspect-ratio:1.6;border-radius:8px;display:grid;place-items:center;font-family:var(--f-mono);font-weight:600;font-size:14px;border:1px solid var(--line);max-width:100%;background:var(--surface-2);color:var(--faint);position:relative}
+.hc.lo:not(.zero){background:var(--g-soft);color:var(--g);border-color:transparent} .hc.md:not(.zero){background:var(--a-soft);color:var(--a);border-color:transparent} .hc.hi:not(.zero){background:var(--r-soft);color:var(--r);border-color:transparent}
+.hc.zero{color:var(--faint);font-weight:400}
 button.hc{cursor:pointer}
 button.hc.sel{border-color:var(--ink)}
 .heat-x{display:flex;justify-content:space-between;margin:6px 0 0 32px;font-size:11px;color:var(--muted)}
@@ -746,6 +756,7 @@ function insights(){
   if(nx.length)out.push({l:'i',h:`<b>${wk.length} meeting</b> dalam 7 hari ke depan. Berikutnya: ${esc(nx[0].title)}, ${fmtDS(nx[0].date)} ${esc(nx[0].time||'')}.`});
   const ahead=act.filter(p=>variance(p)>=3);
   if(ahead.length)out.push({l:'g',h:`${ahead.map(p=>`<b>${esc(p.code)}</b>`).join(', ')} berjalan di depan jadwal.`});
+  if(!out.length)out.push({l:'g',h:'<b>Semua terkendali.</b> Tidak ada proyek tertinggal jadwal, milestone terlambat, risiko tinggi, atau notulen tertunda.'});
   return out.slice(0,8);
 }
 
@@ -772,10 +783,10 @@ function vOverview(){
     <div class="kpi"><span class="eyebrow">Meeting 7 hari</span><span class="v">${meet7}</span><span class="c">${scoped('meetings').filter(m=>m.date<t&&!String(m.mom||'').trim()).length} notulen tertunda</span></div>
     <div class="kpi ${hi?'warn':''}"><span class="eyebrow">Risiko tinggi</span><span class="v">${hi}<small> / ${openR}</small></span><span class="c">Skor ≥ 15 dari risiko terbuka</span></div>
   </div>
-  <section class="panel s4"><div class="ph"><h2>Status RAG portofolio</h2><span class="sub">Proyek aktif</span></div>${donut(act)}</section>
+  <section class="panel s4"><div class="ph"><h2>Status RAG portofolio</h2><span class="sub">Proyek aktif</span></div>${donut(act)}${phaseDist(ps)}</section>
   <section class="panel s8"><div class="ph"><h2>Kesehatan jadwal</h2><span class="sub">Progres aktual vs waktu yang sudah berjalan</span><span class="end lg"><span><i style="background:var(--accent)"></i>Progres</span><span><i style="background:var(--ink);width:2px;height:12px"></i>Rencana per hari ini</span></span></div>${healthTable(act)}</section>
   <section class="panel s7"><div class="ph"><h2>Anggaran vs realisasi</h2><span class="sub">Earned value = anggaran × progres</span></div>
-    <div class="lg" style="margin-bottom:14px"><span><i style="background:var(--accent-soft);border:1px solid var(--line)"></i>Anggaran</span><span><i style="background:var(--data)"></i>Realisasi</span><span><i style="background:var(--r)"></i>Realisasi > nilai progres</span><span><i style="background:var(--ink);width:2px;height:12px"></i>Nilai progres (EV)</span></div>${budgetBars(act)}</section>
+    <div class="lg" style="margin-bottom:14px"><span><i style="background:var(--line-2)"></i>Anggaran</span><span><i style="background:var(--data)"></i>Realisasi</span><span><i style="background:var(--r)"></i>Realisasi > nilai progres</span><span><i style="background:var(--accent);width:2px;height:12px"></i>Nilai progres (EV)</span></div>${budgetBars(act)}</section>
   <section class="panel s5"><div class="ph"><h2>Peta risiko</h2><span class="sub">${openR} risiko terbuka</span><span class="end"><button class="link" data-act="tab" data-k="risks">Lihat register →</button></span></div>${heatmap(scoped('risks').filter(rOpen),false)}</section>
   <section class="panel s6"><div class="ph"><h2>Meeting mendatang</h2><span class="end"><button class="btn sm" data-act="add" data-c="meetings">+ Jadwalkan</button></span></div>${upcomingMeetings(5)}</section>
   <section class="panel s6"><div class="ph"><h2>Milestone terdekat</h2><span class="sub">Terlambat & 30 hari ke depan</span><span class="end"><button class="btn sm" data-act="add" data-c="milestones">+ Milestone</button></span></div>${nearMilestones()}</section>
@@ -785,10 +796,12 @@ function donut(act){
   if(!act.length)return emptyBox('Belum ada proyek aktif.');
   const c={g:0,a:0,r:0};act.forEach(p=>{if(c[p.rag]!=null)c[p.rag]++});
   const tot=act.length,R=54,C=2*Math.PI*R;let off=0;
-  const segs=['r','a','g'].map(k=>{const len=c[k]/tot*C;const s=`<circle r="${R}" cx="75" cy="75" fill="none" stroke="var(--${k})" stroke-width="18" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 75 75)"/>`;off+=len;return c[k]?s:''}).join('');
-  return`<div class="donut-wrap"><svg class="donut" viewBox="0 0 150 150" role="img" aria-label="Distribusi status RAG"><circle r="${R}" cx="75" cy="75" fill="none" stroke="var(--surface-2)" stroke-width="18"/>${segs}<text x="75" y="72" text-anchor="middle" fill="var(--ink)" style="font:600 26px var(--f-display)">${tot}</text><text x="75" y="92" text-anchor="middle" fill="var(--muted)" style="font:500 11px var(--f-body)">proyek</text></svg>
+  const segs=['r','a','g'].map(k=>{const len=c[k]/tot*C;const s=`<circle r="${R}" cx="75" cy="75" fill="none" stroke="var(--${k})" stroke-width="12" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 75 75)"/>`;off+=len;return c[k]?s:''}).join('');
+  return`<div class="donut-wrap"><svg class="donut" viewBox="0 0 150 150" role="img" aria-label="Distribusi status RAG"><circle r="${R}" cx="75" cy="75" fill="none" stroke="var(--surface-2)" stroke-width="12"/>${segs}<text x="75" y="72" text-anchor="middle" fill="var(--ink)" style="font:600 26px var(--f-display)">${tot}</text><text x="75" y="92" text-anchor="middle" fill="var(--muted)" style="font:500 11px var(--f-body)">proyek</text></svg>
   <div class="legend">${['g','a','r'].map(k=>`<div class="row"><span class="sw" style="background:var(--${k})"></span><span>${RAG[k]}</span><span class="num">${c[k]} <span class="faint">· ${pct(c[k],tot)}%</span></span></div>`).join('')}</div></div>`;
 }
+function phaseDist(ps){if(!ps.length)return'';const mx=Math.max(1,...PHASES.map(f=>ps.filter(p=>p.phase===f).length));
+  return`<div class="phase"><div class="eyebrow">Proyek per fase</div>${PHASES.map(f=>{const n=ps.filter(p=>p.phase===f).length;return`<div class="ph-row"><span>${esc(f)}</span><span class="ph-bar"><i style="width:${n/mx*100}%"></i></span><span class="num">${n}</span></div>`}).join('')}</div>`}
 function healthTable(act){
   if(!act.length)return emptyBox('Belum ada proyek aktif.');
   const rows=act.slice().sort((a,b)=>variance(a)-variance(b)).map(p=>{const v=variance(p),e=elapsed(p),left=p.end?diffDays(today(),p.end):null;
