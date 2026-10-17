@@ -1,17 +1,19 @@
 /**
- * Corporate Banking PMO Desk — backend Google Apps Script
+ * Corporate Banking PMO Desk — backend Google (API untuk website GitHub Pages)
  *
- * Data disimpan di Google Sheet tempat script ini dibuat (satu sheet per jenis data).
- * Dokumen vendor (PDF/PNG/JPG) disimpan di folder Google Drive "PMO Desk – Dokumen Vendor".
+ * Hanya file ini yang perlu ditempel ke Google Apps Script.
+ * - setup() membuat Google Sheet "PMO Desk – Data", folder Drive "PMO Desk – Dokumen Vendor",
+ *   data contoh, dan KODE AKSES TIM (lihat Execution log setelah Run).
+ * - Website (nixons88.github.io/pmo-desk) memanggil script ini lewat URL Web App.
+ *   Setiap permintaan wajib membawa kode akses tim; tanpa kode, data tidak bisa dibaca atau diubah.
  *
- * Cara pasang: lihat README.md di repository.
- * Deploy sebagai Web App dengan:
- *   Execute as      : User accessing the web app
- *   Who has access  : Anyone with Google account
- * Hak akses tim diatur dengan membagikan Google Sheet dan folder Drive (Editor = bisa ubah, Viewer = hanya lihat).
+ * Deploy → New deployment → Web app:
+ *   Execute as     : Me
+ *   Who has access : Anyone
  */
 
 const APP_TZ = 'Asia/Jakarta';
+const SHEET_NAME = 'PMO Desk – Data';
 const FOLDER_NAME = 'PMO Desk – Dokumen Vendor';
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB per file
 const ALLOWED_MIME = ['application/pdf', 'image/png', 'image/jpeg'];
@@ -21,29 +23,26 @@ const SCHEMA = {
   milestones: { sheet: 'Milestone', fields: ['id', 'projectId', 'title', 'due', 'status', 'owner'] },
   meetings:   { sheet: 'Meeting',   fields: ['id', 'projectId', 'type', 'title', 'date', 'time', 'duration', 'location', 'attendees', 'agenda', 'mom', 'actions'] },
   vendors:    { sheet: 'Vendor',    fields: ['id', 'name', 'category', 'status', 'projectId', 'contractValue', 'contractEnd', 'pic', 'contact', 'rating', 'notes'] },
-  documents:  { sheet: 'Dokumen',   fields: ['id', 'vendorId', 'projectId', 'name', 'docType', 'note', 'fileId', 'url', 'size', 'contentType', 'uploadedAt'] },
+  documents:  { sheet: 'Dokumen',   fields: ['id', 'vendorId', 'projectId', 'name', 'docType', 'note', 'fileId', 'size', 'contentType', 'uploadedAt'] },
   risks:      { sheet: 'Risiko',    fields: ['id', 'projectId', 'category', 'title', 'impact', 'likelihood', 'status', 'owner', 'due', 'mitigation'] },
 };
 const META_FIELDS = ['example', 'updatedAt', 'updatedBy'];
 const NUMERIC = ['progress', 'budget', 'spent', 'duration', 'contractValue', 'rating', 'impact', 'likelihood', 'size'];
 
-/* ------------------------------------------------------------------ */
-/* Web app                                                             */
-/* ------------------------------------------------------------------ */
-
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle('Corporate Banking PMO Desk')
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
-}
+let WHO_ = '';
 
 /* ------------------------------------------------------------------ */
 /* Setup — jalankan sekali dari editor Apps Script                      */
 /* ------------------------------------------------------------------ */
 
 function setup() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss) throw new Error('Buka Apps Script dari Google Sheet (Extensions → Apps Script), lalu jalankan setup() lagi.');
+  const props = PropertiesService.getScriptProperties();
+
+  let ss = null;
+  const sid = props.getProperty('SHEET_ID');
+  if (sid) { try { ss = SpreadsheetApp.openById(sid); } catch (e) { ss = null; } }
+  if (!ss) { try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch (e) { ss = null; } }
+  if (!ss) ss = SpreadsheetApp.create(SHEET_NAME);
   ss.setSpreadsheetTimeZone(APP_TZ);
 
   Object.keys(SCHEMA).forEach(function (col) {
@@ -54,49 +53,104 @@ function setup() {
     sh.getRange(1, 1, 1, head.length).setValues([head])
       .setFontWeight('bold').setBackground('#0F1B2B').setFontColor('#FFFFFF');
     sh.setFrozenRows(1);
-    // Kolom teks diformat sebagai teks agar tanggal/jam tidak diubah otomatis oleh Sheets.
     head.forEach(function (h, j) {
       if (NUMERIC.indexOf(h) < 0 && h !== 'example') {
         sh.getRange(2, j + 1, Math.max(sh.getMaxRows() - 1, 1), 1).setNumberFormat('@');
       }
     });
   });
-
-  // Hapus sheet bawaan yang kosong (Sheet1 / Lembar1).
   const ours = Object.keys(SCHEMA).map(function (c) { return SCHEMA[c].sheet; });
   ss.getSheets().forEach(function (sh) {
     if (ours.indexOf(sh.getName()) < 0 && sh.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(sh);
   });
 
-  const props = PropertiesService.getScriptProperties();
   let folder = null;
   const fid = props.getProperty('FOLDER_ID');
   if (fid) { try { folder = DriveApp.getFolderById(fid); } catch (e) { folder = null; } }
   if (!folder) folder = DriveApp.createFolder(FOLDER_NAME);
-  props.setProperties({ SHEET_ID: ss.getId(), FOLDER_ID: folder.getId() });
+
+  let key = props.getProperty('ACCESS_KEY');
+  if (!key) key = newAccessKey_();
+  props.setProperties({ SHEET_ID: ss.getId(), FOLDER_ID: folder.getId(), ACCESS_KEY: key });
 
   if (ss.getSheetByName('Proyek').getLastRow() < 2) seedExamples_(ss);
 
-  Logger.log('Setup selesai.');
-  Logger.log('Google Sheet : ' + ss.getUrl());
-  Logger.log('Folder Drive : ' + folder.getUrl());
-  Logger.log('Langkah berikutnya: Deploy → New deployment → Web app (lihat README).');
+  Logger.log('==============================================');
+  Logger.log('SETUP SELESAI');
+  Logger.log('KODE AKSES TIM : ' + key);
+  Logger.log('Google Sheet   : ' + ss.getUrl());
+  Logger.log('Folder Drive   : ' + folder.getUrl());
+  Logger.log('Langkah berikutnya: Deploy → New deployment → Web app.');
+  Logger.log('==============================================');
+}
+
+/** Jalankan bila kode akses bocor atau ada anggota tim yang keluar. Kode lama langsung tidak berlaku. */
+function gantiKodeAkses() {
+  const key = newAccessKey_();
+  PropertiesService.getScriptProperties().setProperty('ACCESS_KEY', key);
+  Logger.log('KODE AKSES TIM BARU : ' + key);
+}
+
+function newAccessKey_() {
+  const abc = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let out = '';
+  for (let i = 0; i < 12; i++) {
+    out += abc.charAt(Math.floor(Math.random() * abc.length));
+    if (i === 3 || i === 7) out += '-';
+  }
+  return out;
 }
 
 /* ------------------------------------------------------------------ */
-/* API yang dipanggil dari halaman (google.script.run)                  */
+/* Web API                                                             */
+/* ------------------------------------------------------------------ */
+
+function doGet() {
+  return json_({ ok: true, app: 'Corporate Banking PMO Desk API', message: 'API aktif. Buka dashboard lewat website GitHub Pages.' });
+}
+
+function doPost(e) {
+  let body;
+  try { body = JSON.parse((e && e.postData && e.postData.contents) || '{}'); }
+  catch (err) { return json_({ ok: false, code: 'BAD_REQUEST', error: 'Permintaan tidak valid.' }); }
+
+  const props = PropertiesService.getScriptProperties();
+  const key = props.getProperty('ACCESS_KEY');
+  if (!key || !props.getProperty('SHEET_ID')) {
+    return json_({ ok: false, code: 'NOT_SETUP', error: 'Server belum di-setup. Pemilik perlu menjalankan setup() di Apps Script.' });
+  }
+  if (String(body.key || '').trim().toUpperCase() !== key) {
+    return json_({ ok: false, code: 'AUTH', error: 'Kode akses salah atau sudah diganti. Minta kode terbaru ke PMO.' });
+  }
+  WHO_ = String(body.who || '').replace(/[\r\n\t]/g, ' ').trim().slice(0, 60);
+
+  const routes = {
+    getAll: getAll, saveItem: saveItem, deleteItems: deleteItems, deleteProject: deleteProject,
+    clearExamples: clearExamples, uploadDocument: uploadDocument, getFile: getFile,
+  };
+  const fn = routes[body.action];
+  if (!fn) return json_({ ok: false, code: 'BAD_REQUEST', error: 'Aksi tidak dikenal.' });
+  try {
+    const args = Array.isArray(body.args) ? body.args : [];
+    return json_({ ok: true, data: fn.apply(null, args) });
+  } catch (err) {
+    return json_({ ok: false, code: 'ERROR', error: String((err && err.message) || err).replace(/^Exception:\s*/, '') });
+  }
+}
+
+function json_(o) {
+  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/* ------------------------------------------------------------------ */
+/* Aksi                                                                */
 /* ------------------------------------------------------------------ */
 
 function getAll() {
   const ss = ss_();
   const out = {};
   Object.keys(SCHEMA).forEach(function (c) { out[c] = readCol_(ss, c); });
-  out.meta = {
-    user: currentUser_(),
-    sheetUrl: ss.getUrl(),
-    folderUrl: 'https://drive.google.com/drive/folders/' + PropertiesService.getScriptProperties().getProperty('FOLDER_ID'),
-    serverTime: new Date().toISOString(),
-  };
+  out.meta = { serverTime: new Date().toISOString() };
   return out;
 }
 
@@ -121,7 +175,6 @@ function deleteItems(list) {
   });
 }
 
-/** Hapus proyek beserta milestone, meeting, dan risikonya. Vendor & dokumen dipertahankan tanpa tautan proyek. */
 function deleteProject(projectId) {
   projectId = String(projectId);
   return withLock_(function (ss) {
@@ -137,7 +190,6 @@ function deleteProject(projectId) {
   });
 }
 
-/** Hapus semua baris bertanda contoh. */
 function clearExamples() {
   return withLock_(function (ss) {
     Object.keys(SCHEMA).forEach(function (c) {
@@ -149,7 +201,7 @@ function clearExamples() {
   });
 }
 
-/** meta: {vendorId, projectId, name, docType, note, contentType}; b64: isi file (base64). */
+/** meta: {vendorId, name, docType, note, contentType}; b64: isi file (base64). */
 function uploadDocument(meta, b64) {
   if (!meta || !b64) throw new Error('File tidak terbaca. Coba pilih file lagi.');
   const mime = String(meta.contentType || '');
@@ -161,17 +213,26 @@ function uploadDocument(meta, b64) {
   return withLock_(function (ss) {
     const vendor = readCol_(ss, 'vendors').filter(function (v) { return String(v.id) === String(meta.vendorId); })[0];
     if (!vendor) throw new Error('Vendor tidak ditemukan. Muat ulang halaman lalu coba lagi.');
-    const root = folder_();
-    const sub = subFolder_(root, vendor.name || 'Tanpa nama');
+    const sub = subFolder_(folder_(), vendor.name || 'Tanpa nama');
     const file = sub.createFile(Utilities.newBlob(bytes, mime, name));
     file.setDescription((meta.docType || '') + ' · ' + (vendor.name || '') + (meta.note ? ' · ' + meta.note : ''));
     writeItem_(ss, 'documents', {
       vendorId: vendor.id, projectId: vendor.projectId || '', name: name,
       docType: String(meta.docType || 'Lainnya'), note: String(meta.note || ''),
-      fileId: file.getId(), url: file.getUrl(), size: bytes.length, contentType: mime,
+      fileId: file.getId(), size: bytes.length, contentType: mime,
       uploadedAt: new Date().toISOString(), example: false,
     });
   });
+}
+
+/** Mengirim isi dokumen ke website (hanya untuk pemegang kode akses). */
+function getFile(docId) {
+  const doc = readCol_(ss_(), 'documents').filter(function (d) { return String(d.id) === String(docId); })[0];
+  if (!doc || !doc.fileId) throw new Error('Dokumen tidak ditemukan.');
+  let blob;
+  try { blob = DriveApp.getFileById(doc.fileId).getBlob(); }
+  catch (e) { throw new Error('File sudah dihapus dari Google Drive.'); }
+  return { name: doc.name, contentType: blob.getContentType() || doc.contentType, b64: Utilities.base64Encode(blob.getBytes()) };
 }
 
 /* ------------------------------------------------------------------ */
@@ -180,15 +241,12 @@ function uploadDocument(meta, b64) {
 
 function ss_() {
   const id = PropertiesService.getScriptProperties().getProperty('SHEET_ID');
-  if (!id) throw new Error('Aplikasi belum di-setup. Pemilik perlu menjalankan fungsi setup() di editor Apps Script.');
-  try { return SpreadsheetApp.openById(id); }
-  catch (e) { throw new Error('Anda belum punya akses ke Google Sheet PMO. Minta pemilik membagikannya ke email Anda.'); }
+  if (!id) throw new Error('Server belum di-setup. Pemilik perlu menjalankan setup() di Apps Script.');
+  return SpreadsheetApp.openById(id);
 }
 
 function folder_() {
-  const id = PropertiesService.getScriptProperties().getProperty('FOLDER_ID');
-  try { return DriveApp.getFolderById(id); }
-  catch (e) { throw new Error('Anda belum punya akses ke folder dokumen vendor. Minta pemilik membagikannya sebagai Editor.'); }
+  return DriveApp.getFolderById(PropertiesService.getScriptProperties().getProperty('FOLDER_ID'));
 }
 
 function subFolder_(root, name) {
@@ -197,35 +255,20 @@ function subFolder_(root, name) {
   return it.hasNext() ? it.next() : root.createFolder(clean);
 }
 
-function currentUser_() {
-  try { return Session.getActiveUser().getEmail() || ''; } catch (e) { return ''; }
-}
-
 function checkCol_(col) {
   if (!Object.prototype.hasOwnProperty.call(SCHEMA, col)) throw new Error('Jenis data tidak dikenal: ' + col);
 }
 
 function withLock_(fn) {
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(20000)) throw new Error('Server sedang sibuk menyimpan perubahan lain. Coba lagi beberapa detik lagi.');
+  if (!lock.tryLock(20000)) throw new Error('Server sedang menyimpan perubahan lain. Coba lagi beberapa detik lagi.');
   try {
-    const ss = ss_();
-    fn(ss);
+    fn(ss_());
     SpreadsheetApp.flush();
-  } catch (e) {
-    throw new Error(friendly_(e));
   } finally {
     lock.releaseLock();
   }
   return getAll();
-}
-
-function friendly_(e) {
-  const m = String((e && e.message) || e);
-  if (/permission|izin|access denied|tidak memiliki izin|You do not have/i.test(m)) {
-    return 'Anda hanya punya akses lihat. Minta pemilik membagikan Google Sheet dan folder dokumen sebagai Editor.';
-  }
-  return m;
 }
 
 function headers_(sh) {
@@ -289,7 +332,7 @@ function writeItem_(ss, col, item) {
   });
   merged.id = idx >= 0 ? ids[idx] : (item.id ? String(item.id) : col.charAt(0) + '_' + Utilities.getUuid().replace(/-/g, '').slice(0, 10));
   merged.updatedAt = new Date().toISOString();
-  merged.updatedBy = currentUser_();
+  merged.updatedBy = WHO_;
 
   const values = head.map(function (h) { return clean_(h, merged[h]); });
   const formats = head.map(function (h) { return NUMERIC.indexOf(h) >= 0 || h === 'example' ? 'General' : '@'; });
@@ -315,8 +358,7 @@ function deleteRows_(ss, col, ids) {
 function trashFiles_(docs) {
   docs.forEach(function (d) {
     if (!d.fileId) return;
-    try { DriveApp.getFileById(d.fileId).setTrashed(true); }
-    catch (e) { /* file milik orang lain atau sudah terhapus: baris tetap dihapus */ }
+    try { DriveApp.getFileById(d.fileId).setTrashed(true); } catch (e) { /* sudah terhapus */ }
   });
 }
 
