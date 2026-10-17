@@ -387,6 +387,13 @@ button.hc.sel{border-color:var(--ink)}
 .upw-f{padding:9px 14px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);background:var(--surface-2)}
 @media (prefers-reduced-motion:reduce){.upi-bar i{transition:none}}
 
+/* Document download progress */
+.dl-prog{width:min(420px,100%);display:grid;gap:8px;padding:12px}
+.dl-t{display:flex;justify-content:space-between;font-size:13px}
+.dl-t span{font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.dl-s{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.dl-h{font-size:11.5px;color:var(--faint)}
+
 /* Footer credit */
 .foot{max-width:1360px;margin:0 auto;padding-inline:20px;padding-block:0 28px;font-size:11.5px;color:var(--faint);display:flex;justify-content:center}
 .foot span{border-top:1px solid var(--line);padding-top:14px;min-width:min(320px,100%);text-align:center}
@@ -616,7 +623,7 @@ async function poll(){
     applyData(d)}catch(e){if(e.code==='AUTH'){logout(e.message)}}
 }
 async function sync(){const b=$('#sync');if(b){b.disabled=true;b.classList.add('spin')}try{applyData(await B.getAll());toast('Data terbaru dimuat')}catch(e){toast(e.message,true);if(e.code==='AUTH')logout(e.message)}finally{const b2=$('#sync');if(b2){b2.disabled=false;b2.classList.remove('spin')}}}
-function logout(msg){SESSION.key='';lsSet('pmo.key',null);lsSet('pmo.cache',null);COLS.forEach(c=>S[c]=[]);storeState='login';errMsg=msg||'';UI.projectOpen=null;$('#drawer-root').innerHTML='';closeModal();render()}
+function logout(msg){SESSION.key='';lsSet('pmo.key',null);lsSet('pmo.cache',null);if(typeof DocCache!=='undefined')DocCache.clear();COLS.forEach(c=>S[c]=[]);storeState='login';errMsg=msg||'';UI.projectOpen=null;$('#drawer-root').innerHTML='';closeModal();render()}
 async function call(fn,...args){busy++;const slow=MODE==='remote'?setTimeout(()=>{if(!$('#toast-root .err'))toast(fn==='uploadDocument'?'Mengunggah ke Google Drive…':'Menyimpan ke Google Sheets…')},700):0;try{applyData(await B[fn](...args));clearTimeout(slow);return true}catch(e){clearTimeout(slow);toast(e.message,true);if(e.code==='AUTH')logout(e.message);return false}finally{busy--}}
 async function login(ev){ev.preventDefault();const f=ev.target;const name=f.elements['lg-name'].value.trim(),key=f.elements['lg-key'].value.trim().toUpperCase();
   const er=$('#lg-err');if(!name||!key){er.textContent='Isi nama dan kode akses.';return}
@@ -1013,7 +1020,9 @@ async function pumpUploads(){if(upRunning)return;upRunning=true;
     u.state='read';u.t0=Date.now();renderUploads();
     try{const b64=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]||'');fr.onerror=()=>rej(new Error('File tidak terbaca.'));fr.readAsDataURL(u.file)});
       u.state='send';renderUploads();busy++;
+      const before=new Set(S.documents.map(x=>x.id));
       try{applyData(await B.uploadDocument({vendorId:u.vendorId,name:u.file.name,docType:u.type,note:u.note,contentType:u.ct},b64))}finally{busy--}
+      if(MODE==='remote'){const nd=S.documents.find(x=>!before.has(x.id)&&x.name===u.file.name);if(nd)DocCache.put(nd.id,u.file)}
       u.state='done';u.t1=Date.now();
     }catch(e){u.state='error';u.t1=Date.now();u.err=e.message||'Gagal mengunggah.';if(e.code==='AUTH'){logout(e.message)}}
     renderUploads()}}
@@ -1031,18 +1040,68 @@ function renderUploads(){let root=$('#upload-root');if(!root){root=document.crea
     <div class="upi-bar"><i style="width:${pct}%"></i></div><div class="upi-st">${st}${u.state==='error'?` <button class="link" data-act="up-retry" data-id="${u.id}">Coba lagi</button>`:''}${u.state==='send'&&MODE==='remote'?`<span class="faint"> · perkiraan ±${fmtSecs(upEstimate(u.file.size))}</span>`:''}</div></div>`}).join('');
   root.innerHTML=`<div class="upw" role="status" aria-live="polite"><div class="upw-h"><b>${head}</b><span class="upw-acts"><button class="ibtn sm" data-act="up-toggle" aria-label="${upCollapsed?'Tampilkan':'Ciutkan'}">${upCollapsed?'▴':'▾'}</button>${active?'':'<button class="ibtn sm" data-act="up-close" aria-label="Tutup">✕</button>'}</span></div>${upCollapsed?'':`<div class="upw-list">${rows}</div>`}${active&&!upCollapsed?'<div class="upw-f">Proses unggah sedang berlangsung. Anda dapat melanjutkan aktivitas lainnya tanpa menutup halaman ini.</div>':''}</div>`}
 window.addEventListener('beforeunload',e=>{if(UPQ.some(x=>x.state==='wait'||x.state==='read'||x.state==='send')){e.preventDefault();e.returnValue=''}});
-const blobCache={};
-async function docBlob(d){if(blobCache[d.id])return blobCache[d.id];const f=await B.getFile(d.id);const bin=atob(f.b64);const u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
-  const url=URL.createObjectURL(new Blob([u8],{type:f.contentType||d.contentType||'application/pdf'}));blobCache[d.id]=url;return url}
+/* ---------- dokumen: cache permanen di browser + unduh dengan progres ---------- */
+const blobCache={},docJobs={};
+const DocCache={db:null,MAX:80,
+  open(){if(this.db)return Promise.resolve(this.db);return new Promise((res,rej)=>{let q;try{q=indexedDB.open('pmo-desk-doccache',1)}catch(e){rej(e);return}
+    q.onupgradeneeded=()=>q.result.createObjectStore('docs');q.onsuccess=()=>{this.db=q.result;res(this.db)};q.onerror=()=>rej(q.error)})},
+  async get(id){try{const db=await this.open();return await new Promise(r=>{const t=db.transaction('docs','readonly').objectStore('docs').get(id);t.onsuccess=()=>r(t.result&&t.result.blob||null);t.onerror=()=>r(null)})}catch(e){return null}},
+  async put(id,blob){try{const db=await this.open();await new Promise(r=>{const tx=db.transaction('docs','readwrite');tx.objectStore('docs').put({blob,ts:Date.now()},id);tx.oncomplete=r;tx.onerror=r});this.trim()}catch(e){}},
+  async trim(){try{const db=await this.open();const all=await new Promise(r=>{const out=[];const c=db.transaction('docs','readonly').objectStore('docs').openCursor();c.onsuccess=()=>{const cur=c.result;if(cur){out.push([cur.key,cur.value.ts]);cur.continue()}else r(out)};c.onerror=()=>r(out)});
+    if(all.length<=this.MAX)return;all.sort((x,y)=>x[1]-y[1]);const tx=db.transaction('docs','readwrite');all.slice(0,all.length-this.MAX).forEach(([k])=>tx.objectStore('docs').delete(k))}catch(e){}},
+  async del(id){try{const db=await this.open();db.transaction('docs','readwrite').objectStore('docs').delete(id)}catch(e){}},
+  clear(){try{if(this.db){this.db.close();this.db=null}indexedDB.deleteDatabase('pmo-desk-doccache')}catch(e){}Object.keys(blobCache).forEach(k=>{try{URL.revokeObjectURL(blobCache[k])}catch(e){}delete blobCache[k]})}};
+/* Unduh isi dokumen dari server sambil melaporkan byte yang sudah diterima. */
+async function fetchDocRemote(d,onBytes){
+  const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),180000);
+  let r;try{r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({key:SESSION.key,who:SESSION.name,action:'getFile',args:[d.id]}),redirect:'follow',signal:ctl.signal})}
+  catch(e){clearTimeout(tm);throw new Error(e&&e.name==='AbortError'?'Server Google terlalu lama merespons. Coba lagi.':'Tidak bisa terhubung ke server Google. Periksa internet lalu coba lagi.')}
+  if(!r.ok){clearTimeout(tm);throw new Error('Server Google tidak merespons (kode '+r.status+').')}
+  let text='';
+  if(r.body&&r.body.getReader){const rd=r.body.getReader(),dec=new TextDecoder();let n=0;for(;;){const {done,value}=await rd.read();if(done)break;n+=value.length;text+=dec.decode(value,{stream:true});onBytes&&onBytes(n)}text+=dec.decode()}
+  else text=await r.text();
+  clearTimeout(tm);let j;try{j=JSON.parse(text)}catch(e){throw new Error('Balasan server tidak terbaca.')}
+  if(!j.ok){const er=new Error(j.error||'Dokumen tidak bisa dimuat.');er.code=j.code;throw er}
+  const f=j.data;const blob=await (await fetch('data:'+(f.contentType||d.contentType||'application/pdf')+';base64,'+f.b64)).blob();
+  return blob}
+/* Satu unduhan per dokumen; pemanggil lain cukup ikut mendengarkan progresnya. */
+function docBlob(d,onProg){
+  if(blobCache[d.id])return Promise.resolve(blobCache[d.id]);
+  let job=docJobs[d.id];
+  if(!job){job=docJobs[d.id]={t0:Date.now(),bytes:0,total:Math.ceil((d.size||0)/3)*4+300,listeners:new Set(),stage:'cache'};
+    job.p=(async()=>{try{
+      let blob=MODE==='remote'?await DocCache.get(d.id):null;
+      if(!blob){job.stage='net';job.listeners.forEach(f=>f(job));
+        if(MODE==='remote')blob=await fetchDocRemote(d,n=>{job.bytes=n;job.listeners.forEach(f=>f(job))});
+        else{const f=await B.getFile(d.id);blob=await (await fetch('data:'+(f.contentType||d.contentType)+';base64,'+f.b64)).blob()}
+        if(MODE==='remote')DocCache.put(d.id,blob)}
+      const url=URL.createObjectURL(blob);blobCache[d.id]=url;return url}
+      finally{delete docJobs[d.id]}})()}
+  if(onProg){job.listeners.add(onProg);onProg(job)}
+  return job.p}
+/* Mulai unduh diam-diam saat kursor mendekati dokumen, agar saat diklik sudah siap. */
+function prefetchDoc(id){if(MODE!=='remote'||blobCache[id]||docJobs[id])return;const d=S.documents.find(x=>x.id===id);if(d)docBlob(d).catch(()=>{})}
+document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('[data-act="doc-view"],[data-act="doc-save"]');if(el)prefetchDoc(el.dataset.id)});
+document.addEventListener('focusin',e=>{const el=e.target.closest&&e.target.closest('[data-act="doc-view"]');if(el)prefetchDoc(el.dataset.id)});
+function progHTML(job,d){const secs=Math.max(0,Math.round((Date.now()-job.t0)/1000));
+  if(job.stage==='cache')return'<span class="muted">Membuka dokumen dari penyimpanan browser…</span>';
+  const est=3+(d.size||0)*1.37/(400*1024),wp=Math.max(3,Math.min(60,Math.round(60*(1-Math.exp(-secs/est*1.2)))));
+  if(job.bytes&&job.w==null)job.w=wp;const pct=job.bytes?Math.min(99,Math.round(job.w+(100-job.w)*Math.min(1,job.bytes/job.total))):wp;const got=job.bytes*0.75;
+  return`<div class="dl-prog"><div class="dl-t"><b>${job.bytes?'Mengunduh dokumen':'Menyiapkan dokumen di server Google'}</b><span>${pct}%</span></div>
+  <div class="upi-bar"><i style="width:${pct}%"></i></div>
+  <div class="dl-s">${job.bytes?fmtSize(got)+' dari '+fmtSize(d.size||0)+' · '+secs+' dtk':secs+' dtk · perkiraan ±'+fmtSecs(3+(d.size||0)*1.37/(400*1024))+' untuk '+fmtSize(d.size||0)}</div>
+  <div class="dl-h">Setelah dibuka sekali, dokumen tersimpan di browser ini dan berikutnya terbuka seketika.</div></div>`}
 async function viewDoc(id){const d=S.documents.find(x=>x.id===id);if(!d)return;const img=/^image\//.test(d.contentType||'');
   $('#modal-root').innerHTML=`<div class="scrim" data-act="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="vt" style="max-width:960px"><div class="mh"><h2 id="vt" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(d.name)}</h2><span id="vw-acts" style="margin-left:auto;display:flex;gap:6px"></span><button class="btn ghost sm" data-act="close-modal" aria-label="Tutup">✕</button></div>
   <div id="vw-body" style="padding:12px;background:var(--surface-2);min-height:200px;display:grid;place-items:center"><span class="muted">Memuat dokumen…</span></div>
   <div style="padding:10px 16px;font-size:12px;color:var(--muted)">${esc(d.docType)} · ${fmtSize(d.size||0)} · diunggah ${d.uploadedAt?fmtDate(String(d.uploadedAt).slice(0,10)):''}${d.updatedBy?' oleh '+esc(d.updatedBy):''}${d.note?' · '+esc(d.note):''}</div></div></div>`;
-  try{const url=await docBlob(d);if(!$('#vw-body'))return;
+  let tick2=0;const upd=job=>{const bd=$('#vw-body');if(bd&&!bd.querySelector('iframe,img'))bd.innerHTML=progHTML(job,d)};
+  try{const url=await docBlob(d,job=>{upd(job);clearInterval(tick2);tick2=setInterval(()=>upd(job),500)});clearInterval(tick2);if(!$('#vw-body'))return;
     $('#vw-acts').innerHTML=`<a class="btn sm" href="${url}" target="_blank" rel="noopener">Buka di tab baru</a><a class="btn sm" href="${url}" download="${esc(d.name)}">Unduh</a>`;
     $('#vw-body').innerHTML=img?`<img src="${url}" alt="${esc(d.name)}" style="display:block;margin:0 auto;max-height:75vh">`:`<iframe src="${url}" title="${esc(d.name)}" style="width:100%;height:75vh;border:0;border-radius:6px;background:var(--surface)"></iframe>`}
-  catch(e){const b=$('#vw-body');if(b)b.innerHTML=`<span style="color:var(--r)">${esc(e.message)}</span>`}}
-async function saveDoc(id){const d=S.documents.find(x=>x.id===id);if(!d)return;try{const url=await docBlob(d);const a=document.createElement('a');a.href=url;a.download=d.name;document.body.appendChild(a);a.click();a.remove()}catch(e){toast(e.message,true)}}
+  catch(e){clearInterval(tick2);const b=$('#vw-body');if(b)b.innerHTML=`<div class="empty" style="border:0"><span style="color:var(--r)">${esc(e.message)}</span><button class="btn sm" data-act="doc-view" data-id="${esc(d.id)}">Coba lagi</button></div>`;if(e.code==='AUTH')logout(e.message)}}
+async function saveDoc(id){const d=S.documents.find(x=>x.id===id);if(!d)return;let tk=0;const show=job=>{if(job.stage!=='net')return;const sec=Math.round((Date.now()-job.t0)/1000);const pct=job.bytes&&job.total>300?Math.min(99,Math.round(job.bytes/job.total*100))+'% · ':'';toast('Menyiapkan unduhan '+d.name+' · '+pct+sec+' dtk')};
+  try{const url=await docBlob(d,job=>{show(job);clearInterval(tk);tk=setInterval(()=>show(job),500)});clearInterval(tk);const a=document.createElement('a');a.href=url;a.download=d.name;document.body.appendChild(a);a.click();a.remove();toast('Unduhan dimulai')}catch(e){clearInterval(tk);toast(e.message,true);if(e.code==='AUTH')logout(e.message)}}
 /* ---------- actions ---------- */
 function exportCSV(){
   const cols=[['code','Kode'],['name','Proyek'],['segment','Segmen'],['phase','Fase'],['rag','RAG'],['priority','Prioritas'],['pm','PM'],['sponsor','Sponsor'],['start','Mulai'],['end','Target selesai'],['progress','Progres %'],['_el','Waktu berjalan %'],['_var','Deviasi'],['budget','Anggaran'],['spent','Realisasi']];
@@ -1076,7 +1135,7 @@ document.addEventListener('click',async e=>{
   if(a==='up-retry'){const u=UPQ.find(x=>x.id===id);if(u){u.state='wait';u.err='';u.t0=0;u.t1=0;renderUploads();pumpUploads()}return}
   if(a==='doc-view')return viewDoc(id);
   if(a==='doc-save')return saveDoc(id);
-  if(a==='doc-del'){const d=S.documents.find(x=>x.id===id);if(!d)return;return confirmBox('Hapus dokumen?',`<b>${esc(d.name)}</b> akan dihapus dari arsip${MODE==='remote'?' dan dipindahkan ke Sampah Google Drive':''}.`,'Hapus',async()=>{if(await del('documents',id))toast('Dokumen dihapus')})}
+  if(a==='doc-del'){const d=S.documents.find(x=>x.id===id);if(!d)return;return confirmBox('Hapus dokumen?',`<b>${esc(d.name)}</b> akan dihapus dari arsip${MODE==='remote'?' dan dipindahkan ke Sampah Google Drive':''}.`,'Hapus',async()=>{if(await del('documents',id)){DocCache.del(id);if(blobCache[id]){URL.revokeObjectURL(blobCache[id]);delete blobCache[id]}toast('Dokumen dihapus')}})}
   if(a==='export')return exportCSV();
   if(a==='sync')return sync();
   if(a==='retry'){storeState='loading';render();return loadAll()}
