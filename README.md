@@ -63,6 +63,12 @@ Kirim alamat website dan **kode akses tim** ke anggota tim. Mereka cukup mengisi
 - **Jejak perubahan**: setiap baris di Google Sheet mencatat nama pengubah (`updatedBy`) dan waktunya (`updatedAt`).
 - **Backup**: buka Google Sheet `PMO Desk – Data` → **File → Download → Microsoft Excel**.
 
+## Deck (proposal & deck pribadi)
+
+- Tab **Deck** berisi proposal/deck dalam bentuk PDF atau link, dikunci dengan password tambahan (bawaan `admin1`).
+- Password diperiksa di server Google, bukan di website. Ganti di Apps Script: **Project Settings → Script Properties → DECK_PASSWORD**.
+- Data Deck tersimpan di sheet `Deck`; file PDF masuk folder `CIMB NIAGA PM` dengan awalan `Deck –`.
+
 ## Keamanan
 
 - Alamat website bersifat publik, tetapi data hanya bisa dibuka dengan **kode akses tim**. Tanpa kode, server menolak semua permintaan.

@@ -25,8 +25,10 @@ const SCHEMA = {
   vendors:    { sheet: 'Vendor',    fields: ['id', 'name', 'category', 'status', 'projectId', 'contractValue', 'contractEnd', 'pic', 'contact', 'rating', 'notes'] },
   documents:  { sheet: 'Dokumen',   fields: ['id', 'vendorId', 'projectId', 'name', 'docType', 'note', 'fileId', 'size', 'contentType', 'uploadedAt'] },
   risks:      { sheet: 'Risiko',    fields: ['id', 'projectId', 'category', 'title', 'impact', 'likelihood', 'status', 'owner', 'due', 'mitigation'] },
+  decks:      { sheet: 'Deck',      fields: ['id', 'title', 'category', 'projectId', 'kind', 'url', 'fileId', 'name', 'size', 'contentType', 'description', 'version', 'date'], locked: true },
 };
 const META_FIELDS = ['example', 'updatedAt', 'updatedBy'];
+const DEFAULT_DECK_PASSWORD = 'admin1'; // ganti lewat Project Settings → Script Properties → DECK_PASSWORD
 const NUMERIC = ['progress', 'budget', 'spent', 'duration', 'contractValue', 'rating', 'impact', 'likelihood', 'size'];
 
 let WHO_ = '';
@@ -40,6 +42,7 @@ function setup() {
 
   let ss = null;
   const sid = props.getProperty('SHEET_ID');
+  const firstRun = !sid;
   if (sid) { try { ss = SpreadsheetApp.openById(sid); } catch (e) { ss = null; } }
   if (!ss) { try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch (e) { ss = null; } }
   if (!ss) ss = SpreadsheetApp.create(SHEET_NAME);
@@ -73,7 +76,8 @@ function setup() {
   if (!key) key = newAccessKey_();
   props.setProperties({ SHEET_ID: ss.getId(), FOLDER_ID: folder.getId(), ACCESS_KEY: key });
 
-  if (ss.getSheetByName('Proyek').getLastRow() < 2) seedExamples_(ss);
+  if (!props.getProperty('DECK_PASSWORD')) props.setProperty('DECK_PASSWORD', DEFAULT_DECK_PASSWORD);
+  if (firstRun && ss.getSheetByName('Proyek').getLastRow() < 2) seedExamples_(ss);
 
   Logger.log('==============================================');
   Logger.log('SETUP SELESAI');
@@ -127,6 +131,7 @@ function doPost(e) {
   const routes = {
     getAll: getAll, saveItem: saveItem, deleteItems: deleteItems, deleteProject: deleteProject,
     clearExamples: clearExamples, uploadDocument: uploadDocument, getFile: getFile,
+    getDecks: getDecks, saveDeck: saveDeck, deleteDeck: deleteDeck, uploadDeck: uploadDeck, getDeckFile: getDeckFile,
   };
   const fn = routes[body.action];
   if (!fn) return json_({ ok: false, code: 'BAD_REQUEST', error: 'Aksi tidak dikenal.' });
@@ -134,7 +139,7 @@ function doPost(e) {
     const args = Array.isArray(body.args) ? body.args : [];
     return json_({ ok: true, data: fn.apply(null, args) });
   } catch (err) {
-    return json_({ ok: false, code: 'ERROR', error: String((err && err.message) || err).replace(/^Exception:\s*/, '') });
+    return json_({ ok: false, code: (err && err.code) || 'ERROR', error: String((err && err.message) || err).replace(/^Exception:\s*/, '') });
   }
 }
 
@@ -149,13 +154,13 @@ function json_(o) {
 function getAll() {
   const ss = ss_();
   const out = {};
-  Object.keys(SCHEMA).forEach(function (c) { out[c] = readCol_(ss, c); });
+  Object.keys(SCHEMA).forEach(function (c) { if (!SCHEMA[c].locked) out[c] = readCol_(ss, c); });
   out.meta = { serverTime: new Date().toISOString() };
   return out;
 }
 
 function saveItem(col, item) {
-  checkCol_(col);
+  checkCol_(col); checkOpen_(col);
   if (!item || typeof item !== 'object') throw new Error('Data tidak valid.');
   return withLock_(function (ss) { writeItem_(ss, col, item); });
 }
@@ -165,7 +170,7 @@ function deleteItems(list) {
   if (!Array.isArray(list) || !list.length) throw new Error('Tidak ada data yang dihapus.');
   return withLock_(function (ss) {
     const byCol = {};
-    list.forEach(function (x) { checkCol_(x.col); (byCol[x.col] = byCol[x.col] || []).push(String(x.id)); });
+    list.forEach(function (x) { checkCol_(x.col); checkOpen_(x.col); (byCol[x.col] = byCol[x.col] || []).push(String(x.id)); });
     if (byCol.vendors) {
       const docs = readCol_(ss, 'documents').filter(function (d) { return byCol.vendors.indexOf(String(d.vendorId)) >= 0; });
       byCol.documents = (byCol.documents || []).concat(docs.map(function (d) { return d.id; }));
@@ -223,6 +228,80 @@ function uploadDocument(meta, b64) {
       uploadedAt: new Date().toISOString(), example: false,
     });
   });
+}
+
+/* ---------------- Deck (dilindungi password tambahan) ---------------- */
+
+function deckAuth_(pass) {
+  const want = PropertiesService.getScriptProperties().getProperty('DECK_PASSWORD') || DEFAULT_DECK_PASSWORD;
+  if (String(pass || '') !== want) { const e = new Error('Password Deck salah.'); e.code = 'DECK_AUTH'; throw e; }
+}
+
+function getDecks(pass) {
+  deckAuth_(pass);
+  return readCol_(ss_(), 'decks');
+}
+
+function saveDeck(pass, item) {
+  deckAuth_(pass);
+  if (!item || typeof item !== 'object') throw new Error('Data tidak valid.');
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Server sedang menyimpan perubahan lain. Coba lagi beberapa detik lagi.');
+  try {
+    const ss = ss_();
+    const clean = {};
+    ['id', 'title', 'category', 'projectId', 'kind', 'url', 'description', 'version', 'date'].forEach(function (k) { if (k in item) clean[k] = item[k]; });
+    if (clean.kind === 'link' && clean.url && !/^https?:\/\//i.test(String(clean.url))) throw new Error('Link harus diawali http:// atau https://');
+    writeItem_(ss, 'decks', clean);
+    SpreadsheetApp.flush();
+    return readCol_(ss, 'decks');
+  } finally { lock.releaseLock(); }
+}
+
+function deleteDeck(pass, id) {
+  deckAuth_(pass);
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Server sedang menyimpan perubahan lain. Coba lagi beberapa detik lagi.');
+  try {
+    const ss = ss_();
+    trashFiles_(readCol_(ss, 'decks').filter(function (d) { return String(d.id) === String(id); }));
+    deleteRows_(ss, 'decks', [String(id)]);
+    SpreadsheetApp.flush();
+    return readCol_(ss, 'decks');
+  } finally { lock.releaseLock(); }
+}
+
+/** meta: {id?, title, category, projectId, description, version, date, name, contentType}; b64: isi PDF. */
+function uploadDeck(pass, meta, b64) {
+  deckAuth_(pass);
+  if (!meta || !b64) throw new Error('File tidak terbaca. Coba pilih file lagi.');
+  const mime = String(meta.contentType || '');
+  if (ALLOWED_MIME.indexOf(mime) < 0) throw new Error('Format tidak didukung. Unggah PDF, PNG, atau JPG.');
+  const bytes = Utilities.base64Decode(b64);
+  if (bytes.length > MAX_UPLOAD_BYTES) throw new Error('File melebihi 10 MB. Kompres PDF lalu unggah ulang.');
+  const name = String(meta.name || 'deck.pdf').replace(/[\\/:*?"<>|]/g, '_').slice(0, 180);
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('Server sedang menyimpan perubahan lain. Coba lagi beberapa detik lagi.');
+  try {
+    const ss = ss_();
+    if (meta.id) trashFiles_(readCol_(ss, 'decks').filter(function (d) { return String(d.id) === String(meta.id); }));
+    const file = folder_().createFile(Utilities.newBlob(bytes, mime, driveName_('Deck', meta.title || 'Tanpa judul', name)));
+    const row = { kind: 'pdf', url: '', fileId: file.getId(), name: name, size: bytes.length, contentType: mime };
+    ['id', 'title', 'category', 'projectId', 'description', 'version', 'date'].forEach(function (k) { if (k in meta) row[k] = meta[k]; });
+    writeItem_(ss, 'decks', row);
+    SpreadsheetApp.flush();
+    return readCol_(ss, 'decks');
+  } finally { lock.releaseLock(); }
+}
+
+function getDeckFile(pass, id) {
+  deckAuth_(pass);
+  const d = readCol_(ss_(), 'decks').filter(function (x) { return String(x.id) === String(id); })[0];
+  if (!d || !d.fileId) throw new Error('File deck tidak ditemukan.');
+  let blob;
+  try { blob = DriveApp.getFileById(d.fileId).getBlob(); }
+  catch (e) { throw new Error('File sudah dihapus dari Google Drive.'); }
+  return { name: d.name, contentType: blob.getContentType() || d.contentType, b64: Utilities.base64Encode(blob.getBytes()) };
 }
 
 /** Mengirim isi dokumen ke website (hanya untuk pemegang kode akses). */
@@ -287,6 +366,23 @@ function rapikanFolder() {
   Logger.log(moved + ' file dipindahkan, ' + removed + ' subfolder kosong dipindahkan ke Sampah.');
 }
 
+function checkOpen_(col) {
+  if (SCHEMA[col].locked) throw new Error('Data ini hanya bisa diubah dari menu Deck.');
+}
+
+/** Membuat sheet beserta header bila belum ada (mis. sheet Deck pada instalasi lama). */
+function sheet_(ss, col) {
+  const s = SCHEMA[col];
+  let sh = ss.getSheetByName(s.sheet);
+  if (!sh) {
+    sh = ss.insertSheet(s.sheet);
+    const head = s.fields.concat(META_FIELDS);
+    sh.getRange(1, 1, 1, head.length).setValues([head]).setFontWeight('bold').setBackground('#0F1B2B').setFontColor('#FFFFFF');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
 function checkCol_(col) {
   if (!Object.prototype.hasOwnProperty.call(SCHEMA, col)) throw new Error('Jenis data tidak dikenal: ' + col);
 }
@@ -308,7 +404,7 @@ function headers_(sh) {
 }
 
 function readCol_(ss, col) {
-  const sh = ss.getSheetByName(SCHEMA[col].sheet);
+  const sh = SCHEMA[col].locked ? sheet_(ss, col) : ss.getSheetByName(SCHEMA[col].sheet);
   if (!sh || sh.getLastRow() < 2) return [];
   const vals = sh.getDataRange().getValues();
   const head = vals[0].map(String);
@@ -344,7 +440,7 @@ function clean_(k, v) {
 
 function writeItem_(ss, col, item) {
   const s = SCHEMA[col];
-  const sh = ss.getSheetByName(s.sheet);
+  const sh = s.locked ? sheet_(ss, col) : ss.getSheetByName(s.sheet);
   if (!sh) throw new Error('Sheet "' + s.sheet + '" tidak ditemukan. Jalankan setup() lagi.');
   const head = headers_(sh);
   const tz = ss.getSpreadsheetTimeZone();
