@@ -38,7 +38,7 @@ Hapus semua isi editor, lalu tempel seluruh isi [`apps-script/Code.gs`](apps-scr
 1. Di toolbar atas, pastikan fungsi yang dipilih adalah **setup**, lalu klik **Run**.
 2. Klik **Review permissions** → pilih akun Anda.
 3. Muncul *"Google hasn't verified this app"*: klik **Advanced → Go to PMO Desk (unsafe) → Allow**. Ini normal untuk script buatan sendiri.
-4. Di **Execution log** di bawah, catat **KODE AKSES TIM** (format `XXXX-XXXX-XXXX`). Google Sheet `PMO Desk – Data` dan folder `PMO Desk – Dokumen Vendor` otomatis dibuat di Google Drive Anda.
+4. Di **Execution log** di bawah, catat **KODE AKSES TIM** (format `XXXX-XXXX-XXXX`). Google Sheet `PMO Desk – Data` dan folder `CIMB NIAGA PM` otomatis dibuat di Google Drive Anda.
 
 **4. Deploy**
 1. **Deploy → New deployment** → ikon ⚙ → **Web app**.

@@ -2,7 +2,7 @@
  * Corporate Banking PMO Desk — backend Google (API untuk website GitHub Pages)
  *
  * Hanya file ini yang perlu ditempel ke Google Apps Script.
- * - setup() membuat Google Sheet "PMO Desk – Data", folder Drive "PMO Desk – Dokumen Vendor",
+ * - setup() membuat Google Sheet "PMO Desk – Data", folder Drive "CIMB NIAGA PM" (semua PDF vendor),
  *   data contoh, dan KODE AKSES TIM (lihat Execution log setelah Run).
  * - Website (nixons88.github.io/pmo-desk) memanggil script ini lewat URL Web App.
  *   Setiap permintaan wajib membawa kode akses tim; tanpa kode, data tidak bisa dibaca atau diubah.
@@ -14,7 +14,7 @@
 
 const APP_TZ = 'Asia/Jakarta';
 const SHEET_NAME = 'PMO Desk – Data';
-const FOLDER_NAME = 'PMO Desk – Dokumen Vendor';
+const FOLDER_NAME = 'CIMB NIAGA PM';
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB per file
 const ALLOWED_MIME = ['application/pdf', 'image/png', 'image/jpeg'];
 
@@ -213,8 +213,8 @@ function uploadDocument(meta, b64) {
   return withLock_(function (ss) {
     const vendor = readCol_(ss, 'vendors').filter(function (v) { return String(v.id) === String(meta.vendorId); })[0];
     if (!vendor) throw new Error('Vendor tidak ditemukan. Muat ulang halaman lalu coba lagi.');
-    const sub = subFolder_(folder_(), vendor.name || 'Tanpa nama');
-    const file = sub.createFile(Utilities.newBlob(bytes, mime, name));
+    // Semua dokumen masuk langsung ke folder "CIMB NIAGA PM"; nama file diawali vendor & jenis agar mudah dilacak.
+    const file = folder_().createFile(Utilities.newBlob(bytes, mime, driveName_(vendor.name, meta.docType, name)));
     file.setDescription((meta.docType || '') + ' · ' + (vendor.name || '') + (meta.note ? ' · ' + meta.note : ''));
     writeItem_(ss, 'documents', {
       vendorId: vendor.id, projectId: vendor.projectId || '', name: name,
@@ -249,10 +249,42 @@ function folder_() {
   return DriveApp.getFolderById(PropertiesService.getScriptProperties().getProperty('FOLDER_ID'));
 }
 
-function subFolder_(root, name) {
-  const clean = String(name).replace(/[\\/:*?"<>|]/g, '_').slice(0, 100);
-  const it = root.getFoldersByName(clean);
-  return it.hasNext() ? it.next() : root.createFolder(clean);
+function driveName_(vendor, type, name) {
+  const clean = function (x) { return String(x || '').replace(/\s*\/\s*/g, '-').replace(/[\\:*?"<>|]/g, '_').trim(); };
+  return (clean(vendor) || 'Tanpa vendor') + ' – ' + (clean(type) || 'Lainnya') + ' – ' + clean(name);
+}
+
+/**
+ * Jalankan SEKALI setelah memperbarui kode: mengganti nama folder dokumen menjadi "CIMB NIAGA PM",
+ * memindahkan semua file dari subfolder vendor lama ke dalamnya (dengan nama berawalan vendor & jenis),
+ * lalu memindahkan subfolder yang sudah kosong ke Sampah.
+ */
+function rapikanFolder() {
+  const folder = folder_();
+  folder.setName(FOLDER_NAME);
+  const docs = readCol_(ss_(), 'documents');
+  const vendors = readCol_(ss_(), 'vendors');
+  const byFile = {};
+  docs.forEach(function (d) { if (d.fileId) byFile[d.fileId] = d; });
+  const vName = {};
+  vendors.forEach(function (v) { vName[v.id] = v.name; });
+  let moved = 0, removed = 0;
+  const subs = folder.getFolders();
+  while (subs.hasNext()) {
+    const sub = subs.next();
+    const files = sub.getFiles();
+    while (files.hasNext()) {
+      const f = files.next();
+      const d = byFile[f.getId()];
+      f.moveTo(folder);
+      if (d) f.setName(driveName_(vName[d.vendorId] || sub.getName(), d.docType, d.name));
+      else f.setName(driveName_(sub.getName(), 'Lainnya', f.getName()));
+      moved++;
+    }
+    if (!sub.getFiles().hasNext() && !sub.getFolders().hasNext()) { sub.setTrashed(true); removed++; }
+  }
+  Logger.log('Folder: ' + folder.getName() + ' · ' + folder.getUrl());
+  Logger.log(moved + ' file dipindahkan, ' + removed + ' subfolder kosong dipindahkan ke Sampah.');
 }
 
 function checkCol_(col) {
