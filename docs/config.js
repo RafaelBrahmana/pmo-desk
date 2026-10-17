@@ -6,5 +6,5 @@
  * Isi dengan "Web app URL" dari Google Apps Script (berakhiran /exec).
  */
 window.PMO_CONFIG = {
-  API_URL: ""
+  API_URL: "https://script.google.com/macros/s/AKfycbwxy4W69HLncvbYyClJOWbCoffL4PBqu89d3We3hTmN2nlndXWFFc0iB9uIqD_pqm7R/exec"
 };
