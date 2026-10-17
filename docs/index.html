@@ -387,12 +387,12 @@ button.hc.sel{border-color:var(--ink)}
 .upw-f{padding:9px 14px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);background:var(--surface-2)}
 @media (prefers-reduced-motion:reduce){.upi-bar i{transition:none}}
 
-/* Document download progress */
-.dl-prog{width:min(420px,100%);display:grid;gap:8px;padding:12px}
-.dl-t{display:flex;justify-content:space-between;font-size:13px}
-.dl-t span{font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
-.dl-s{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.dl-h{font-size:11.5px;color:var(--faint)}
+/* Document loading */
+.dl-simple{display:flex;align-items:center;gap:14px;padding:18px}
+.dl-simple b{display:block;font-size:14px;font-weight:600}
+.dl-simple span:not(.spin){display:block;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--accent-soft);border-top-color:var(--accent);flex:none;animation:spin .8s linear infinite}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
 
 /* Footer credit */
 .foot{max-width:1360px;margin:0 auto;padding-inline:20px;padding-block:0 28px;font-size:11.5px;color:var(--faint);display:flex;justify-content:center}
@@ -1083,24 +1083,18 @@ function docBlob(d,onProg){
 function prefetchDoc(id){if(MODE!=='remote'||blobCache[id]||docJobs[id])return;const d=S.documents.find(x=>x.id===id);if(d)docBlob(d).catch(()=>{})}
 document.addEventListener('mouseover',e=>{const el=e.target.closest&&e.target.closest('[data-act="doc-view"],[data-act="doc-save"]');if(el)prefetchDoc(el.dataset.id)});
 document.addEventListener('focusin',e=>{const el=e.target.closest&&e.target.closest('[data-act="doc-view"]');if(el)prefetchDoc(el.dataset.id)});
-function progHTML(job,d){const secs=Math.max(0,Math.round((Date.now()-job.t0)/1000));
-  if(job.stage==='cache')return'<span class="muted">Membuka dokumen dari penyimpanan browser…</span>';
-  const est=3+(d.size||0)*1.37/(400*1024),wp=Math.max(3,Math.min(60,Math.round(60*(1-Math.exp(-secs/est*1.2)))));
-  if(job.bytes&&job.w==null)job.w=wp;const pct=job.bytes?Math.min(99,Math.round(job.w+(100-job.w)*Math.min(1,job.bytes/job.total))):wp;const got=job.bytes*0.75;
-  return`<div class="dl-prog"><div class="dl-t"><b>${job.bytes?'Mengunduh dokumen':'Menyiapkan dokumen di server Google'}</b><span>${pct}%</span></div>
-  <div class="upi-bar"><i style="width:${pct}%"></i></div>
-  <div class="dl-s">${job.bytes?fmtSize(got)+' dari '+fmtSize(d.size||0)+' · '+secs+' dtk':secs+' dtk · perkiraan ±'+fmtSecs(3+(d.size||0)*1.37/(400*1024))+' untuk '+fmtSize(d.size||0)}</div>
-  <div class="dl-h">Setelah dibuka sekali, dokumen tersimpan di browser ini dan berikutnya terbuka seketika.</div></div>`}
+function progHTML(job,d){const secs=Math.max(0,Math.floor((Date.now()-job.t0)/1000));
+  return`<div class="dl-simple" role="status"><span class="spin" aria-hidden="true"></span><div><b>Memuat dokumen…</b><span>${secs} detik · ${fmtSize(d.size||0)}</span></div></div>`}
 async function viewDoc(id){const d=S.documents.find(x=>x.id===id);if(!d)return;const img=/^image\//.test(d.contentType||'');
   $('#modal-root').innerHTML=`<div class="scrim" data-act="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="vt" style="max-width:960px"><div class="mh"><h2 id="vt" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(d.name)}</h2><span id="vw-acts" style="margin-left:auto;display:flex;gap:6px"></span><button class="btn ghost sm" data-act="close-modal" aria-label="Tutup">✕</button></div>
   <div id="vw-body" style="padding:12px;background:var(--surface-2);min-height:200px;display:grid;place-items:center"><span class="muted">Memuat dokumen…</span></div>
   <div style="padding:10px 16px;font-size:12px;color:var(--muted)">${esc(d.docType)} · ${fmtSize(d.size||0)} · diunggah ${d.uploadedAt?fmtDate(String(d.uploadedAt).slice(0,10)):''}${d.updatedBy?' oleh '+esc(d.updatedBy):''}${d.note?' · '+esc(d.note):''}</div></div></div>`;
-  let tick2=0;const upd=job=>{const bd=$('#vw-body');if(bd&&!bd.querySelector('iframe,img'))bd.innerHTML=progHTML(job,d)};
+  let tick2=0;const upd=job=>{const bd=$('#vw-body');if(bd&&!bd.querySelector('iframe,img'))bd.innerHTML=progHTML(job,d)};upd({t0:Date.now()});
   try{const url=await docBlob(d,job=>{upd(job);clearInterval(tick2);tick2=setInterval(()=>upd(job),500)});clearInterval(tick2);if(!$('#vw-body'))return;
     $('#vw-acts').innerHTML=`<a class="btn sm" href="${url}" target="_blank" rel="noopener">Buka di tab baru</a><a class="btn sm" href="${url}" download="${esc(d.name)}">Unduh</a>`;
     $('#vw-body').innerHTML=img?`<img src="${url}" alt="${esc(d.name)}" style="display:block;margin:0 auto;max-height:75vh">`:`<iframe src="${url}" title="${esc(d.name)}" style="width:100%;height:75vh;border:0;border-radius:6px;background:var(--surface)"></iframe>`}
   catch(e){clearInterval(tick2);const b=$('#vw-body');if(b)b.innerHTML=`<div class="empty" style="border:0"><span style="color:var(--r)">${esc(e.message)}</span><button class="btn sm" data-act="doc-view" data-id="${esc(d.id)}">Coba lagi</button></div>`;if(e.code==='AUTH')logout(e.message)}}
-async function saveDoc(id){const d=S.documents.find(x=>x.id===id);if(!d)return;let tk=0;const show=job=>{if(job.stage!=='net')return;const sec=Math.round((Date.now()-job.t0)/1000);const pct=job.bytes&&job.total>300?Math.min(99,Math.round(job.bytes/job.total*100))+'% · ':'';toast('Menyiapkan unduhan '+d.name+' · '+pct+sec+' dtk')};
+async function saveDoc(id){const d=S.documents.find(x=>x.id===id);if(!d)return;let tk=0;const show=job=>{if(job.stage!=='net')return;const sec=Math.round((Date.now()-job.t0)/1000);toast('Menyiapkan unduhan '+d.name+' · '+sec+' detik')};
   try{const url=await docBlob(d,job=>{show(job);clearInterval(tk);tk=setInterval(()=>show(job),500)});clearInterval(tk);const a=document.createElement('a');a.href=url;a.download=d.name;document.body.appendChild(a);a.click();a.remove();toast('Unduhan dimulai')}catch(e){clearInterval(tk);toast(e.message,true);if(e.code==='AUTH')logout(e.message)}}
 /* ---------- actions ---------- */
 function exportCSV(){
