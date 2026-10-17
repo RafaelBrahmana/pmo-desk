@@ -17,6 +17,8 @@ const SHEET_NAME = 'PMO Desk – Data';
 const FOLDER_NAME = 'CIMB NIAGA PM';
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB per file
 const ALLOWED_MIME = ['application/pdf', 'image/png', 'image/jpeg'];
+const DECK_MAX_BYTES = 20 * 1024 * 1024; // 20 MB per deck
+const DECK_MIME = ALLOWED_MIME.concat(['application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.ms-powerpoint']);
 
 const SCHEMA = {
   projects:   { sheet: 'Proyek',    fields: ['id', 'code', 'name', 'segment', 'sponsor', 'pm', 'phase', 'rag', 'priority', 'start', 'end', 'progress', 'budget', 'spent', 'objective'] },
@@ -25,6 +27,7 @@ const SCHEMA = {
   vendors:    { sheet: 'Vendor',    fields: ['id', 'name', 'category', 'status', 'projectId', 'contractValue', 'contractEnd', 'pic', 'contact', 'rating', 'notes'] },
   documents:  { sheet: 'Dokumen',   fields: ['id', 'vendorId', 'projectId', 'name', 'docType', 'note', 'fileId', 'size', 'contentType', 'uploadedAt'] },
   risks:      { sheet: 'Risiko',    fields: ['id', 'projectId', 'category', 'title', 'impact', 'likelihood', 'status', 'owner', 'due', 'mitigation'] },
+  decks:      { sheet: 'Deck',      fields: ['id', 'title', 'category', 'status', 'projectId', 'date', 'version', 'audience', 'owner', 'kind', 'url', 'fileId', 'name', 'size', 'contentType', 'description'], auto: true },
 };
 const META_FIELDS = ['example', 'updatedAt', 'updatedBy'];
 const NUMERIC = ['progress', 'budget', 'spent', 'duration', 'contractValue', 'rating', 'impact', 'likelihood', 'size'];
@@ -40,6 +43,7 @@ function setup() {
 
   let ss = null;
   const sid = props.getProperty('SHEET_ID');
+  const firstRun = !sid;
   if (sid) { try { ss = SpreadsheetApp.openById(sid); } catch (e) { ss = null; } }
   if (!ss) { try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch (e) { ss = null; } }
   if (!ss) ss = SpreadsheetApp.create(SHEET_NAME);
@@ -73,7 +77,7 @@ function setup() {
   if (!key) key = newAccessKey_();
   props.setProperties({ SHEET_ID: ss.getId(), FOLDER_ID: folder.getId(), ACCESS_KEY: key });
 
-  if (ss.getSheetByName('Proyek').getLastRow() < 2) seedExamples_(ss);
+  if (firstRun && ss.getSheetByName('Proyek').getLastRow() < 2) seedExamples_(ss);
 
   Logger.log('==============================================');
   Logger.log('SETUP SELESAI');
@@ -127,6 +131,7 @@ function doPost(e) {
   const routes = {
     getAll: getAll, saveItem: saveItem, deleteItems: deleteItems, deleteProject: deleteProject,
     clearExamples: clearExamples, uploadDocument: uploadDocument, getFile: getFile,
+    uploadDeck: uploadDeck, getDeckFile: getDeckFile,
   };
   const fn = routes[body.action];
   if (!fn) return json_({ ok: false, code: 'BAD_REQUEST', error: 'Aksi tidak dikenal.' });
@@ -170,6 +175,7 @@ function deleteItems(list) {
       const docs = readCol_(ss, 'documents').filter(function (d) { return byCol.vendors.indexOf(String(d.vendorId)) >= 0; });
       byCol.documents = (byCol.documents || []).concat(docs.map(function (d) { return d.id; }));
     }
+    if (byCol.decks) trashFiles_(readCol_(ss, 'decks').filter(function (d) { return byCol.decks.indexOf(String(d.id)) >= 0; }));
     if (byCol.documents) trashFiles_(readCol_(ss, 'documents').filter(function (d) { return byCol.documents.indexOf(String(d.id)) >= 0; }));
     Object.keys(byCol).forEach(function (c) { deleteRows_(ss, c, byCol[c]); });
   });
@@ -223,6 +229,32 @@ function uploadDocument(meta, b64) {
       uploadedAt: new Date().toISOString(), example: false,
     });
   });
+}
+
+/** Deck & PPT. meta: {id?, title, category, status, projectId, date, version, audience, owner, description, name, contentType}; b64: isi file. */
+function uploadDeck(meta, b64) {
+  if (!meta || !b64) throw new Error('File tidak terbaca. Coba pilih file lagi.');
+  const mime = String(meta.contentType || '');
+  if (DECK_MIME.indexOf(mime) < 0) throw new Error('Format tidak didukung. Unggah PDF, PPT/PPTX, PNG, atau JPG.');
+  const bytes = Utilities.base64Decode(b64);
+  if (bytes.length > DECK_MAX_BYTES) throw new Error('File melebihi 20 MB. Kompres file lalu unggah ulang.');
+  const name = String(meta.name || 'deck').replace(/[\\/:*?"<>|]/g, '_').slice(0, 180);
+  return withLock_(function (ss) {
+    if (meta.id) trashFiles_(readCol_(ss, 'decks').filter(function (d) { return String(d.id) === String(meta.id); }));
+    const file = folder_().createFile(Utilities.newBlob(bytes, mime, driveName_('Deck', meta.title || 'Tanpa judul', name)));
+    const row = { kind: 'file', url: '', fileId: file.getId(), name: name, size: bytes.length, contentType: mime };
+    ['id', 'title', 'category', 'status', 'projectId', 'date', 'version', 'audience', 'owner', 'description'].forEach(function (k) { if (k in meta) row[k] = meta[k]; });
+    writeItem_(ss, 'decks', row);
+  });
+}
+
+function getDeckFile(id) {
+  const d = readCol_(ss_(), 'decks').filter(function (x) { return String(x.id) === String(id); })[0];
+  if (!d || !d.fileId) throw new Error('File deck tidak ditemukan.');
+  let blob;
+  try { blob = DriveApp.getFileById(d.fileId).getBlob(); }
+  catch (e) { throw new Error('File sudah dihapus dari Google Drive.'); }
+  return { name: d.name, contentType: blob.getContentType() || d.contentType, b64: Utilities.base64Encode(blob.getBytes()) };
 }
 
 /** Mengirim isi dokumen ke website (hanya untuk pemegang kode akses). */
@@ -287,6 +319,19 @@ function rapikanFolder() {
   Logger.log(moved + ' file dipindahkan, ' + removed + ' subfolder kosong dipindahkan ke Sampah.');
 }
 
+/** Sheet yang dibuat otomatis bila belum ada (mis. 'Deck' pada instalasi lama). */
+function sheet_(ss, col) {
+  const s = SCHEMA[col];
+  let sh = ss.getSheetByName(s.sheet);
+  if (!sh && s.auto) {
+    sh = ss.insertSheet(s.sheet);
+    const head = s.fields.concat(META_FIELDS);
+    sh.getRange(1, 1, 1, head.length).setValues([head]).setFontWeight('bold').setBackground('#0F1B2B').setFontColor('#FFFFFF');
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
 function checkCol_(col) {
   if (!Object.prototype.hasOwnProperty.call(SCHEMA, col)) throw new Error('Jenis data tidak dikenal: ' + col);
 }
@@ -308,7 +353,7 @@ function headers_(sh) {
 }
 
 function readCol_(ss, col) {
-  const sh = ss.getSheetByName(SCHEMA[col].sheet);
+  const sh = sheet_(ss, col);
   if (!sh || sh.getLastRow() < 2) return [];
   const vals = sh.getDataRange().getValues();
   const head = vals[0].map(String);
@@ -344,7 +389,7 @@ function clean_(k, v) {
 
 function writeItem_(ss, col, item) {
   const s = SCHEMA[col];
-  const sh = ss.getSheetByName(s.sheet);
+  const sh = sheet_(ss, col);
   if (!sh) throw new Error('Sheet "' + s.sheet + '" tidak ditemukan. Jalankan setup() lagi.');
   const head = headers_(sh);
   const tz = ss.getSpreadsheetTimeZone();
@@ -376,7 +421,8 @@ function writeItem_(ss, col, item) {
 }
 
 function deleteRows_(ss, col, ids) {
-  const sh = ss.getSheetByName(SCHEMA[col].sheet);
+  const sh = sheet_(ss, col);
+  if (!sh) return;
   const last = sh.getLastRow();
   if (last < 2) return;
   const want = {};
@@ -457,7 +503,12 @@ function seedExamples_(ss) {
     ['r9', 'p-ekyb', 'Regulasi / Compliance', 'Temuan audit atas retensi dokumen digital', 4, 2, 'Closed', 'Compliance', '2026-09-30', 'Kebijakan retensi 10 tahun disetujui dan diterapkan.'],
   ].map(function (a) { return { id: a[0], projectId: a[1], category: a[2], title: a[3], impact: a[4], likelihood: a[5], status: a[6], owner: a[7], due: a[8], mitigation: a[9] }; });
 
-  [['projects', P], ['milestones', M], ['meetings', T], ['vendors', V], ['risks', R]].forEach(function (pair) {
+  const K = [
+    { id: 'dk1', title: 'Steering Committee CMS v3 · Oktober', category: 'Materi presentasi', status: 'Dipresentasikan', projectId: 'p-cms', date: '2026-10-15', version: 'v2', audience: 'Head of Transaction Banking', owner: 'Rafael', kind: 'link', url: 'https://docs.google.com/presentation/', description: 'Status SIT, opsi jadwal UAT, dan permintaan persetujuan CR #04.' },
+    { id: 'dk2', title: 'Proposal Recovery Plan SCF', category: 'Proposal', status: 'Review', projectId: 'p-scf', date: '2026-10-21', version: 'v1', audience: 'Head of Corporate Banking', owner: 'Rafael', kind: 'link', url: 'https://www.canva.com/', description: 'Rencana pemulihan integrasi ERP anchor dan opsi penalti vendor.' },
+    { id: 'dk3', title: 'Laporan Portofolio PMO Q3 2026', category: 'Laporan', status: 'Final', projectId: '', date: '2026-10-03', version: 'final', audience: 'Manajemen Corporate Banking', owner: 'Rafael', kind: 'link', url: 'https://onedrive.live.com/', description: 'Ringkasan progres, anggaran, dan risiko seluruh proyek kuartal ketiga.' },
+  ];
+  [['projects', P], ['milestones', M], ['meetings', T], ['vendors', V], ['risks', R], ['decks', K]].forEach(function (pair) {
     pair[1].forEach(function (o) { writeItem_(ss, pair[0], ex(o)); });
   });
 }

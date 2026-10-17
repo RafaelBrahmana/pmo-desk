@@ -63,6 +63,11 @@ Kirim alamat website dan **kode akses tim** ke anggota tim. Mereka cukup mengisi
 - **Jejak perubahan**: setiap baris di Google Sheet mencatat nama pengubah (`updatedBy`) dan waktunya (`updatedAt`).
 - **Backup**: buka Google Sheet `PMO Desk – Data` → **File → Download → Microsoft Excel**.
 
+## Deck & PPT
+
+- Tab **Deck & PPT** menyimpan deck yang sudah dibuat: file PDF/PPT/PPTX (maks 20 MB, masuk folder `CIMB NIAGA PM` dengan awalan `Deck –`) atau link (Google Slides, Canva, PowerPoint online).
+- Setiap deck punya tanggal, status (Draft, Review, Final, Dipresentasikan), kategori, versi, audiens, dan pembuat; dikelompokkan per bulan dan bisa dicari/difilter.
+
 ## Keamanan
 
 - Alamat website bersifat publik, tetapi data hanya bisa dibuka dengan **kode akses tim**. Tanpa kode, server menolak semua permintaan.
