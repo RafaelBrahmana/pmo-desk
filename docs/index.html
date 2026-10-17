@@ -113,6 +113,7 @@ body.pre-auth .band-top{padding-block:16px 16px}
 .auth-greet .dot{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.6}
 .auth-greet #au-tz{font-size:10.5px;font-weight:600;letter-spacing:.06em;opacity:.8}
 .auth-hero h2{font-size:clamp(26px,3vw,34px);font-weight:700;line-height:1.15;letter-spacing:-.02em;margin-top:6px;color:var(--hero-ink)}
+.auth-hero .auth-for{margin:6px 0 0;font-size:clamp(16px,1.6vw,19px);font-weight:500;letter-spacing:-.01em;color:var(--hero-ink);opacity:.92}.auth-hero .auth-for span{font-weight:300;font-style:italic;opacity:.8;margin-right:2px}
 .auth-org{margin:0;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--hero-soft)}
 .auth-lead{margin:0;font-size:15px;line-height:1.6;max-width:42ch;color:var(--hero-ink);opacity:.92}
 .auth-feat{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:12px}
@@ -780,6 +781,7 @@ function vLogin(){const d=new Date();return`<section class="auth">
   <div class="auth-hero">
     <div class="auth-greet"><span id="au-greet">${greeting(d.getHours())}</span><span class="dot"></span><span id="au-time">${pad(d.getHours())}:${pad(d.getMinutes())}</span> <span id="au-tz">${tzLabel(d)}</span></div>
     <h2>Project Management Dashboard</h2>
+    <p class="auth-for"><span>for</span> Talent Partnership Intern</p>
     <p class="auth-org">Corporate Banking · Project Management Office</p>
     <p class="auth-lead">Platform terintegrasi untuk pemantauan proyek dan progres tim.</p>
     <ul class="auth-feat">
