@@ -1,4 +1,6 @@
-# Corporate Banking PMO Desk
+# Project Management Dashboard
+
+_by Rafael Brahmana — Project Portfolio, Coordination & Monitoring_
 
 Dashboard PMO Corporate Banking: portofolio proyek, timeline & milestone, jadwal dan notulen meeting, vendor dengan arsip PDF, dan register risiko. Sorotan PMO (proyek tertinggal jadwal, milestone terlambat, serapan anggaran berlebih, notulen tertunda, kontrak vendor yang hampir habis, PKS yang belum diarsipkan) dihitung otomatis.
 
