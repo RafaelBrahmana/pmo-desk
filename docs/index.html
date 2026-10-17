@@ -17,6 +17,7 @@
   --line:#E8E0E1; --line-2:#D8CCCE;
   --band:#FFFFFF; --band-ink:#1F1A1B; --band-muted:#6B5F61; --band-line:#E8E0E1; --band-2:#F9F6F6;
   --accent:#790008; --accent-ink:#FFFFFF; --accent-soft:#F7E6E7; --accent-2:#C2545A; --brand-red:#ED3024; --data:#3E4C5E; --logo-plate:#FFFFFF;
+  --hero-a:#8A0A12; --hero-b:#4A0207; --hero-glow:rgba(237,48,36,.45); --hero-ink:#FFFFFF; --hero-soft:rgba(255,255,255,.72); --hero-chip:rgba(255,255,255,.12); --hero-line:rgba(255,255,255,.14); --hero-ring:rgba(255,255,255,.06);
   --g:#2B8143; --g-soft:#E2F1E6; --a:#B47400; --a-soft:#FAEFD8; --r:#D3362B; --r-soft:#FCE5E2;
   --scrim:rgba(30,10,12,.48); --shadow:0 1px 2px rgba(60,10,14,.06),0 8px 24px rgba(60,10,14,.07);
   --f-display:"Poppins",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -98,8 +99,36 @@ button,input,select,textarea{font:inherit;color:inherit}
 @media (max-width:1180px){.clock-d{display:none}.clock{height:38px}.brand p{display:none}.logo img{height:26px}.ibtn.out span{display:none}.ibtn.out{padding:0 10px}.scope-wrap label{display:none}.scope-wrap .scope{max-width:190px}}
 @media (max-width:860px){.band-top{row-gap:10px}.band-tools{margin-left:0;width:100%;justify-content:flex-start}.clock{margin-right:auto}.vsep{display:none}.tabrow{flex-direction:column-reverse;align-items:stretch;gap:0}.scope-wrap{padding:0 0 4px;min-width:0}.scope-wrap .scope{flex:1;min-width:0;width:100%;max-width:none}}
 @media (max-width:560px){.who-txt{display:none}.band-tools{gap:8px}.clock{flex:1;min-width:0;padding:0 10px}.ibtn.out span{display:none}.ibtn.out{padding:0 10px}}
-.login{max-width:420px;margin:48px auto;display:grid;gap:14px}
-.login .fld input{border:1px solid var(--line-2);background:var(--surface);border-radius:6px;padding:10px 12px;width:100%}
+/* Login */
+body.pre-auth .tabrow,body.pre-auth .band-tools,body.pre-auth .brand p{display:none}
+body.pre-auth .band-top{padding-block:16px 16px}
+.auth{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);max-width:1080px;margin:28px auto 8px;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow)}
+.auth-hero{position:relative;padding:44px 44px 36px;color:var(--hero-ink);background:radial-gradient(120% 90% at 100% 0%,var(--hero-glow) 0%,transparent 55%),linear-gradient(150deg,var(--hero-a) 0%,var(--hero-b) 100%);display:flex;flex-direction:column;gap:14px;overflow:hidden;isolation:isolate}
+.auth-hero::before{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(var(--hero-line) 1px,transparent 1px),linear-gradient(90deg,var(--hero-line) 1px,transparent 1px);background-size:36px 36px;mask-image:linear-gradient(160deg,rgba(0,0,0,.9),transparent 70%);-webkit-mask-image:linear-gradient(160deg,rgba(0,0,0,.9),transparent 70%)}
+.auth-hero::after{content:"";position:absolute;right:-90px;bottom:-110px;width:320px;height:320px;border-radius:50%;border:44px solid var(--hero-ring);z-index:-1}
+.auth-greet{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;font-size:12.5px;font-weight:500;padding:6px 12px;border-radius:999px;background:var(--hero-chip);font-variant-numeric:tabular-nums}
+.auth-greet .dot{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.6}
+.auth-greet #au-tz{font-size:10.5px;font-weight:600;letter-spacing:.06em;opacity:.8}
+.auth-hero h2{font-size:clamp(26px,3vw,34px);font-weight:700;line-height:1.15;letter-spacing:-.02em;margin-top:6px;color:var(--hero-ink)}
+.auth-org{margin:0;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--hero-soft)}
+.auth-lead{margin:0;font-size:15px;line-height:1.6;max-width:42ch;color:var(--hero-ink);opacity:.92}
+.auth-feat{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:12px}
+.auth-feat li{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:center}
+.auth-feat svg{width:36px;height:36px;padding:8px;border-radius:10px;background:var(--hero-chip);fill:none;stroke:var(--hero-ink);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.auth-feat b{display:block;font-size:13.5px;font-weight:600;color:var(--hero-ink)}
+.auth-feat span{display:block;font-size:12px;color:var(--hero-soft)}
+.auth-date{margin-top:auto;padding-top:18px;font-size:12px;color:var(--hero-soft);border-top:1px solid var(--hero-line)}
+.auth-card{padding:44px 40px;display:flex;flex-direction:column;justify-content:center;gap:16px;background:var(--surface)}
+.auth-card h3{font-size:26px;font-weight:700;margin:4px 0 2px;letter-spacing:-.02em}
+.auth-card p.muted{margin:0;font-size:13.5px}
+.auth-card .fld input{border:1px solid var(--line-2);background:var(--surface-2);border-radius:10px;padding:12px 14px;width:100%;font-size:14px}
+.auth-card .fld input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);background:var(--surface)}
+.auth-card .err:empty{display:none}
+.auth-go{justify-content:center;padding:12px;border-radius:10px;font-size:14px}
+.auth-note{margin:0;display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--faint)}
+.auth-note svg{width:15px;height:15px;flex:none;margin-top:1px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:900px){.auth{grid-template-columns:1fr;margin-top:12px}.auth-hero{padding:32px 28px 26px}.auth-card{padding:32px 28px}}
+@media (max-width:560px){.auth-feat,.auth-date{display:none}.auth-hero{padding:26px 22px}.auth-card{padding:26px 22px}.auth{border-radius:14px}}
 .err{color:var(--r);font-size:13px;min-height:1.2em}
 .scope{background:var(--surface);color:var(--band-ink);border:1px solid var(--line-2);border-radius:10px;height:36px;padding:0 12px;max-width:280px;font-size:13px;cursor:pointer}
 .scope:hover{border-color:var(--accent)}
@@ -542,11 +571,39 @@ async function login(ev){ev.preventDefault();const f=ev.target;const name=f.elem
   SESSION.name=name;SESSION.key=key;
   try{const d=await B.getAll();clearTimeout(hint);lsSet('pmo.name',name);lsSet('pmo.key',key);errMsg='';applyData(d);startPolling();toast('Selamat datang, '+name)}
   catch(e){clearTimeout(hint);SESSION.key='';const e2=$('#lg-err');if(e2)e2.textContent=e.message;btn.disabled=false;btn.textContent='Masuk'}}
-function vLogin(){return`<form class="panel login" id="login-form" novalidate><div><h2 style="font-size:20px">Masuk ke Project Management Dashboard</h2><p class="muted" style="margin:6px 0 0">Alat internal tim PMO Corporate Banking. Gunakan kode akses tim yang dibagikan oleh PMO.</p></div>
-  <div class="fld"><label for="lg-name">Nama Anda</label><input id="lg-name" name="lg-name" autocomplete="name" placeholder="misal: Rafael" value="${esc(SESSION.name)}"></div>
-  <div class="fld"><label for="lg-key">Kode akses tim</label><input id="lg-key" name="lg-key" autocomplete="off" placeholder="XXXX-XXXX-XXXX" style="font-family:var(--f-mono);text-transform:uppercase"></div>
-  <div class="err" id="lg-err" role="alert">${esc(errMsg)}</div><button type="submit" class="btn pri" style="justify-content:center;padding:10px">Masuk</button>
-  <p class="faint" style="font-size:12px;margin:0">Nama Anda dicatat pada setiap perubahan data. Kode tersimpan di browser ini sampai Anda klik Keluar.</p></form>`}
+const ICON={
+  port:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  time:'<path d="M3 6h11M3 12h18M3 18h8"/><circle cx="18" cy="6" r="2"/><circle cx="14" cy="18" r="2"/>',
+  meet:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  doc:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+  risk:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17.5v.01"/>',
+  lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'};
+const ic=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
+function greeting(h){return h<4?'Selamat malam':h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam'}
+function vLogin(){const d=new Date();return`<section class="auth">
+  <div class="auth-hero">
+    <div class="auth-greet"><span id="au-greet">${greeting(d.getHours())}</span><span class="dot"></span><span id="au-time">${pad(d.getHours())}:${pad(d.getMinutes())}</span> <span id="au-tz">${tzLabel(d)}</span></div>
+    <h2>Project Management Dashboard</h2>
+    <p class="auth-org">Corporate Banking · Project Management Office</p>
+    <p class="auth-lead">Platform terintegrasi untuk pemantauan proyek dan progres tim.</p>
+    <ul class="auth-feat">
+      <li>${ic('port')}<div><b>Portofolio proyek</b><span>Status RAG, progres vs rencana, dan serapan anggaran</span></div></li>
+      <li>${ic('time')}<div><b>Timeline &amp; milestone</b><span>Tenggat dan keterlambatan terpantau otomatis</span></div></li>
+      <li>${ic('meet')}<div><b>Meeting &amp; notulen</b><span>Kalender, agenda, dan action items tim</span></div></li>
+      <li>${ic('doc')}<div><b>Vendor &amp; dokumen</b><span>Arsip PDF dan kelengkapan NDA, PKS, BAST</span></div></li>
+      <li>${ic('risk')}<div><b>Manajemen risiko</b><span>Matriks dampak × kemungkinan dan mitigasi</span></div></li>
+    </ul>
+    <div class="auth-date" id="au-date">${HARI[d.getDay()]}, ${d.getDate()} ${MONTHS_L[d.getMonth()]} ${d.getFullYear()}</div>
+  </div>
+  <form class="auth-card" id="login-form" novalidate>
+    <div><span class="eyebrow" style="color:var(--accent)">Akses tim</span><h3>Masuk</h3><p class="muted">Gunakan kode akses yang dibagikan oleh PMO.</p></div>
+    <div class="fld"><label for="lg-name">Nama Anda</label><input id="lg-name" name="lg-name" autocomplete="name" placeholder="misal: Rafael" value="${esc(SESSION.name)}"></div>
+    <div class="fld"><label for="lg-key">Kode akses tim</label><input id="lg-key" name="lg-key" autocomplete="off" placeholder="XXXX-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:.06em"></div>
+    <div class="err" id="lg-err" role="alert">${esc(errMsg)}</div>
+    <button type="submit" class="btn pri auth-go">Masuk</button>
+    <p class="auth-note">${ic('lock')}<span>Data hanya dapat dibuka dengan kode akses tim. Nama Anda dicatat pada setiap perubahan.</span></p>
+  </form>
+</section>`}
 async function put(col,id,data){const body=Object.assign({},data);if(id)body.id=id;delete body.updatedAt;delete body.updatedBy;return call('saveItem',col,body)}
 async function patch(col,id,data){return call('saveItem',col,Object.assign({id},data))}
 async function del(col,id){return call('deleteItems',[{col,id}])}
@@ -557,7 +614,7 @@ let tt=0;function toast(msg,err){const r=$('#toast-root');r.innerHTML=`<div clas
 /* ---------- header ---------- */
 const HARI=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
 function tzLabel(d){const o=-d.getTimezoneOffset()/60;return o===7?'WIB':o===8?'WITA':o===9?'WIT':'GMT'+(o>=0?'+':'')+o}
-function tick(){const d=new Date(),t=$('#clk-t');if(!t)return;t.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+function tick(){const d=new Date(),t=$('#clk-t');const at=$('#au-time');if(at){at.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());$('#au-greet').textContent=greeting(d.getHours());$('#au-tz').textContent=tzLabel(d)}if(!t)return;t.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
   $('#clk-z').textContent=tzLabel(d);$('#clk-d').textContent=HARI[d.getDay()]+', '+d.getDate()+' '+MONTHS_L[d.getMonth()]+' '+d.getFullYear()}
 tick();setInterval(tick,1000);
 function renderHeader(){
@@ -577,6 +634,7 @@ function renderHeader(){
 
 /* ---------- render ---------- */
 function render(){
+  document.body.classList.toggle('pre-auth',storeState==='login');
   renderHeader();
   const main=$('#main');
   if(storeState==='loading'){main.innerHTML=(MODE==='remote'?'<p class="muted" style="margin:0 0 14px">Memuat data dari Google Sheets tim… biasanya 5–15 detik saat pertama dibuka.</p>':'')+'<div class="skel" aria-label="Memuat data"><div></div><div style="height:140px"></div><div style="height:260px"></div></div>';return}
