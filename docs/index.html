@@ -333,6 +333,31 @@ button.hc.sel{border-color:var(--ink)}
 .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .inp{border:1px solid var(--line-2);background:var(--surface);border-radius:6px;padding:7px 10px;min-width:0}
 
+/* Upload panel */
+#upload-root .upw{position:fixed;right:20px;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);z-index:45;width:min(380px,calc(100% - 32px));background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 40px rgba(30,10,12,.18);overflow:hidden}
+.upw-h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.upw-h b{font-size:13px;font-weight:600;flex:1;min-width:0}
+.upw-acts{display:flex;gap:6px}
+.ibtn.sm{height:28px;min-width:28px;padding:0 6px;border-radius:8px;font-size:12px}
+.upw-list{max-height:320px;overflow-y:auto;padding:6px 14px}
+.upi{padding:10px 0;border-bottom:1px solid var(--line);display:grid;gap:7px}
+.upi:last-child{border-bottom:0}
+.upi-top{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center}
+.upi .fi{width:28px;height:32px;border-radius:4px;background:var(--r-soft);color:var(--r);display:grid;place-items:center;font-size:8.5px;font-weight:700}
+.upi .fi.img{background:var(--accent-soft);color:var(--accent)}
+.upi-name{min-width:0}
+.upi-name b{display:block;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.upi-name span{font-size:11px;color:var(--muted)}
+.upi-pct{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--accent)}
+.upi.done .upi-pct{color:var(--g)}.upi.error .upi-pct{color:var(--r)}
+.upi-bar{height:6px;border-radius:3px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.upi-bar i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .25s linear}
+.upi.done .upi-bar i{background:var(--g)}.upi.error .upi-bar i{background:var(--r)}.upi.wait .upi-bar i{width:0}
+.upi-st{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.upi.error .upi-st{color:var(--r)}
+.upw-f{padding:9px 14px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);background:var(--surface-2)}
+@media (prefers-reduced-motion:reduce){.upi-bar i{transition:none}}
+
 /* Footer credit */
 .foot{max-width:1360px;margin:0 auto;padding-inline:20px;padding-block:0 28px;font-size:11.5px;color:var(--faint);display:flex;justify-content:center}
 .foot span{border-top:1px solid var(--line);padding-top:14px;min-width:min(320px,100%);text-align:center}
@@ -449,7 +474,7 @@ const rp=v=>{v=+v||0;const a=Math.abs(v);if(a>=1e12)return'Rp '+n1(v/1e12)+' T';
 const pct=(a,b)=>b>0?Math.round(a/b*100):0;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const sum=(arr,f)=>arr.reduce((s,x)=>s+(+f(x)||0),0);
-const fmtSize=b=>b>=1048576?n1(b/1048576)+' MB':Math.max(1,Math.round(b/1024))+' KB';
+const fmtSize=b=>!b?"0 KB":b>=1048576?n1(b/1048576)+' MB':Math.max(1,Math.round(b/1024))+' KB';
 const proj=id=>S.projects.find(p=>p.id===id);
 const mcode=id=>id&&proj(id)?pcode(id):'Umum';
 const pcode=id=>{const p=proj(id);return p?p.code||p.name:'—'};
@@ -919,24 +944,52 @@ function openUpload(vendorId,files){
   const missing=reqDocs(v).find(t=>!vDocs(v).some(d=>d.docType===t))||'Lainnya';
   $('#modal-root').innerHTML=`<div class="scrim" data-act="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="ut"><div class="mh"><h2 id="ut">Unggah dokumen · ${esc(v.name)}</h2><button class="btn ghost sm x" data-act="close-modal" aria-label="Tutup">✕</button></div>
   <form id="upf"><div class="fld w2"><label for="up-file">File (PDF, PNG, JPG · maks 10 MB)</label><input id="up-file" type="file" accept="application/pdf,.pdf,image/png,image/jpeg" multiple></div><div class="fld"><label for="up-type">Jenis dokumen</label><select id="up-type">${DOC_TYPES.map(t=>`<option ${t===missing?'selected':''}>${t}</option>`).join('')}</select></div><div class="fld"><label for="up-note">Keterangan</label><input id="up-note" type="text" placeholder="misal: versi final, ditandatangani 12 Okt"></div><div class="fld w2"><span class="hint" id="up-status"></span></div>
-  <div class="mf"><button type="button" class="btn" data-act="close-modal">Batal</button><button type="submit" class="btn pri" id="up-go">Unggah</button></div></form></div></div>`;
+  <div class="mf"><button type="button" class="btn" data-act="close-modal">Batal</button><button type="submit" class="btn pri" id="up-go">Unggah di latar belakang</button></div></form></div></div>`;
   let picked=files?Array.from(files):[];
   const st=$('#up-status');const show=()=>{st.textContent=picked.length?picked.map(f=>f.name+' ('+fmtSize(f.size)+')').join(', '):''};show();
   $('#up-file').addEventListener('change',e=>{picked=Array.from(e.target.files||[]);show()});
-  $('#upf').addEventListener('submit',async ev=>{ev.preventDefault();if(!picked.length){toast('Pilih file terlebih dahulu.',true);return}
-    const go=$('#up-go');go.disabled=true;const type=$('#up-type').value,note=$('#up-note').value.trim();let ok=0;
+  $('#upf').addEventListener('submit',ev=>{ev.preventDefault();if(!picked.length){toast('Pilih file terlebih dahulu.',true);return}
+    const type=$('#up-type').value,note=$('#up-note').value.trim();let n=0;
     for(const f of picked){
       let ct=f.type;if(!OK_TYPES[ct]){const ext=(f.name.split('.').pop()||'').toLowerCase();ct=ext==='pdf'?'application/pdf':ext==='png'?'image/png':(ext==='jpg'||ext==='jpeg')?'image/jpeg':''}
       if(!ct){toast(f.name+': format tidak didukung. Unggah PDF, PNG, atau JPG.',true);continue}
       if(f.size>10*1048576){toast(f.name+' melebihi 10 MB. Kompres PDF lalu unggah ulang.',true);continue}
-      st.textContent='Mengunggah '+f.name+(MODE==='remote'?' ke Google Drive…':'…');
-      try{const b64=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]||'');fr.onerror=()=>rej(new Error('File tidak terbaca.'));fr.readAsDataURL(f)});
-        if(await call('uploadDocument',{vendorId:v.id,name:f.name,docType:type,note,contentType:ct},b64))ok++;
-      }catch(e){toast(f.name+': '+e.message,true)}
+      UPQ.push({id:'u'+Date.now()+Math.random().toString(36).slice(2,6),file:f,ct,vendorId:v.id,vendorName:v.name,type,note,state:'wait',t0:0,t1:0,err:''});n++;
     }
-    if(ok){closeModal();toast(ok+' dokumen tersimpan')}else{go.disabled=false;st.textContent=''}
+    if(!n)return;closeModal();renderUploads();pumpUploads();
   });
 }
+/* ---------- antrean unggah (berjalan di belakang layar) ---------- */
+const UPQ=[];let upRunning=false,upTimer=0,upCollapsed=false;
+function upEstimate(size){return MODE==='remote'?4+size*1.37/(300*1024):0.6}
+function upSecs(u){return Math.max(0,((u.t1||Date.now())-u.t0)/1000)}
+function fmtSecs(x){x=Math.round(x);return x<60?x+' dtk':Math.floor(x/60)+' mnt '+(x%60)+' dtk'}
+function upPct(u){if(u.state==='done')return 100;if(u.state==='wait')return 0;if(u.state==='read')return 4;if(u.state==='error')return 100;
+  const e=upSecs(u),est=upEstimate(u.file.size);return Math.min(94,Math.round(6+88*(1-Math.exp(-e/est*1.15))))}
+async function pumpUploads(){if(upRunning)return;upRunning=true;
+  if(!upTimer)upTimer=setInterval(renderUploads,250);
+  try{for(;;){const u=UPQ.find(x=>x.state==='wait');if(!u)break;
+    u.state='read';u.t0=Date.now();renderUploads();
+    try{const b64=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]||'');fr.onerror=()=>rej(new Error('File tidak terbaca.'));fr.readAsDataURL(u.file)});
+      u.state='send';renderUploads();busy++;
+      try{applyData(await B.uploadDocument({vendorId:u.vendorId,name:u.file.name,docType:u.type,note:u.note,contentType:u.ct},b64))}finally{busy--}
+      u.state='done';u.t1=Date.now();
+    }catch(e){u.state='error';u.t1=Date.now();u.err=e.message||'Gagal mengunggah.';if(e.code==='AUTH'){logout(e.message)}}
+    renderUploads()}}
+  finally{upRunning=false;clearInterval(upTimer);upTimer=0;renderUploads();
+    const done=UPQ.filter(x=>x.state==='done').length,bad=UPQ.filter(x=>x.state==='error').length;
+    if(done&&!bad)toast(done+' dokumen berhasil diunggah');}
+}
+function renderUploads(){let root=$('#upload-root');if(!root){root=document.createElement('div');root.id='upload-root';document.body.appendChild(root)}
+  if(!UPQ.length){root.innerHTML='';return}
+  const active=UPQ.filter(x=>x.state==='wait'||x.state==='read'||x.state==='send').length,done=UPQ.filter(x=>x.state==='done').length,bad=UPQ.filter(x=>x.state==='error').length;
+  const head=active?`Mengunggah ${UPQ.length-active+1} dari ${UPQ.length} file`:bad?`${done} berhasil · ${bad} gagal`:`${done} file berhasil diunggah`;
+  const rows=UPQ.map(u=>{const pct=upPct(u),secs=u.t0?fmtSecs(upSecs(u)):'';
+    const st=u.state==='wait'?'Menunggu giliran':u.state==='read'?'Membaca file…':u.state==='send'?`${MODE==='remote'?'Mengirim ke Google Drive':'Menyimpan'} · ${secs}`:u.state==='done'?`Selesai dalam ${secs}`:esc(u.err);
+    return`<div class="upi ${u.state}"><div class="upi-top"><span class="fi ${/^image\//.test(u.ct)?'img':''}">${/^image\//.test(u.ct)?'IMG':'PDF'}</span><div class="upi-name"><b title="${esc(u.file.name)}">${esc(u.file.name)}</b><span>${esc(u.vendorName)} · ${fmtSize(u.file.size)}</span></div><span class="upi-pct">${u.state==='done'?'✓':u.state==='error'?'!':pct+'%'}</span></div>
+    <div class="upi-bar"><i style="width:${pct}%"></i></div><div class="upi-st">${st}${u.state==='error'?` <button class="link" data-act="up-retry" data-id="${u.id}">Coba lagi</button>`:''}${u.state==='send'&&MODE==='remote'?`<span class="faint"> · perkiraan ±${fmtSecs(upEstimate(u.file.size))}</span>`:''}</div></div>`}).join('');
+  root.innerHTML=`<div class="upw" role="status" aria-live="polite"><div class="upw-h"><b>${head}</b><span class="upw-acts"><button class="ibtn sm" data-act="up-toggle" aria-label="${upCollapsed?'Tampilkan':'Ciutkan'}">${upCollapsed?'▴':'▾'}</button>${active?'':'<button class="ibtn sm" data-act="up-close" aria-label="Tutup">✕</button>'}</span></div>${upCollapsed?'':`<div class="upw-list">${rows}</div>`}${active&&!upCollapsed?'<div class="upw-f">Anda bisa lanjut bekerja; unggahan tetap berjalan. Jangan tutup tab ini.</div>':''}</div>`}
+window.addEventListener('beforeunload',e=>{if(UPQ.some(x=>x.state==='wait'||x.state==='read'||x.state==='send')){e.preventDefault();e.returnValue=''}});
 const blobCache={};
 async function docBlob(d){if(blobCache[d.id])return blobCache[d.id];const f=await B.getFile(d.id);const bin=atob(f.b64);const u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
   const url=URL.createObjectURL(new Blob([u8],{type:f.contentType||d.contentType||'application/pdf'}));blobCache[d.id]=url;return url}
@@ -977,6 +1030,9 @@ document.addEventListener('click',async e=>{
   if(a==='cal-day'){UI.calDay=k&&UI.calDay!==k?k:null;return render()}
   if(a==='risk-cell'){UI.riskCell=k&&UI.riskCell!==k?k:null;return render()}
   if(a==='upload')return openUpload(id);
+  if(a==='up-toggle'){upCollapsed=!upCollapsed;return renderUploads()}
+  if(a==='up-close'){for(let i=UPQ.length-1;i>=0;i--)if(UPQ[i].state==='done'||UPQ[i].state==='error')UPQ.splice(i,1);return renderUploads()}
+  if(a==='up-retry'){const u=UPQ.find(x=>x.id===id);if(u){u.state='wait';u.err='';u.t0=0;u.t1=0;renderUploads();pumpUploads()}return}
   if(a==='doc-view')return viewDoc(id);
   if(a==='doc-save')return saveDoc(id);
   if(a==='doc-del'){const d=S.documents.find(x=>x.id===id);if(!d)return;return confirmBox('Hapus dokumen?',`<b>${esc(d.name)}</b> akan dihapus dari arsip${MODE==='remote'?' dan dipindahkan ke Sampah Google Drive':''}.`,'Hapus',async()=>{if(await del('documents',id))toast('Dokumen dihapus')})}
