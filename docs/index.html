@@ -517,6 +517,7 @@ button.hc.sel{border-color:var(--ink)}
 .fld input,.fld select,.fld textarea{border:1px solid var(--line-2);background:var(--surface);border-radius:6px;padding:8px 10px;width:100%}
 .fld textarea{min-height:80px;resize:vertical}
 .fld .hint{font-size:11.5px;color:var(--faint)}
+.pw{position:relative}.pw input{padding-right:44px!important}.pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;display:grid;place-items:center;border:0;background:transparent;color:var(--faint);border-radius:8px;cursor:pointer}.pw-eye:hover{color:var(--ink);background:var(--surface-2)}.pw-eye:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.pw-eye[aria-pressed="true"] .slash{display:none}
 .mf{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;padding-top:6px;border-top:1px solid var(--line);margin-top:4px;padding-top:14px}
 .mf .left{margin-right:auto}
 .drawer-scrim{position:fixed;inset:0;background:var(--scrim);z-index:40}
@@ -793,7 +794,7 @@ function vLogin(){const d=new Date();return`<section class="auth">
   <form class="auth-card" id="login-form" novalidate>
     <div><span class="eyebrow" style="color:var(--accent)">Akses tim</span><h3>Masuk</h3><p class="muted">Gunakan kode akses yang dibagikan oleh PMO.</p></div>
     <div class="fld"><label for="lg-name">Nama Anda</label><input id="lg-name" name="lg-name" autocomplete="name" placeholder="misal: Rafael" value="${esc(SESSION.name)}"></div>
-    <div class="fld"><label for="lg-key">Kode akses tim</label><input id="lg-key" name="lg-key" autocomplete="off" placeholder="XXXX-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:.06em"></div>
+    <div class="fld"><label for="lg-key">Kode akses tim</label><div class="pw"><input id="lg-key" name="lg-key" type="password" autocomplete="current-password" spellcheck="false" autocapitalize="characters" placeholder="••••-••••-••••" style="text-transform:uppercase;letter-spacing:.06em"><button type="button" class="pw-eye" data-act="pw-eye" aria-label="Tampilkan kode" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="slash" d="M4 4l16 16"/></svg></button></div></div>
     <div class="err" id="lg-err" role="alert">${esc(errMsg)}</div>
     <button type="submit" class="btn pri auth-go">Masuk</button>
     <p class="auth-note">${ic('lock')}<span>Data hanya dapat dibuka dengan kode akses tim. Nama Anda dicatat pada setiap perubahan.</span></p>
@@ -1385,7 +1386,7 @@ document.addEventListener('input',e=>{if(e.target&&e.target.id==='chat-text'){co
 document.addEventListener('change',e=>{if(!e.target)return;if(e.target.id==='chat-filter'){CHAT.filter=e.target.value;CHAT._scroll=true;renderChatList()}
   if(e.target.id==='chat-topic')CHAT.topic=e.target.value;if(e.target.name==='ck')CHAT.kind=e.target.value});
 function chatAdminPrompt(){$('#modal-root').innerHTML=`<div class="scrim" data-act="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="at" style="max-width:420px"><div class="mh"><h2 id="at">Mode admin diskusi</h2><button class="btn ghost sm x" data-act="close-modal" aria-label="Tutup">✕</button></div>
-  <form id="adm-form" novalidate style="display:grid;grid-template-columns:1fr;gap:12px"><p class="muted" style="margin:0;font-size:13px">Admin dapat menghapus pesan dan membersihkan seluruh percakapan.</p><div class="fld"><label for="adm-pass">Password admin</label><input id="adm-pass" type="password" autocomplete="current-password"></div><div class="err" id="adm-err" role="alert"></div>
+  <form id="adm-form" novalidate style="display:grid;grid-template-columns:1fr;gap:12px"><p class="muted" style="margin:0;font-size:13px">Admin dapat menghapus pesan dan membersihkan seluruh percakapan.</p><div class="fld"><label for="adm-pass">Password admin</label><div class="pw"><input id="adm-pass" type="password" autocomplete="current-password"><button type="button" class="pw-eye" data-act="pw-eye" aria-label="Tampilkan password" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="slash" d="M4 4l16 16"/></svg></button></div></div><div class="err" id="adm-err" role="alert"></div>
   <div class="mf"><button type="button" class="btn" data-act="close-modal">Batal</button><button type="submit" class="btn pri" id="adm-go">Masuk mode admin</button></div></form></div></div>`;
   setTimeout(()=>$('#adm-pass').focus(),30);
   $('#adm-form').addEventListener('submit',async ev=>{ev.preventDefault();const p=$('#adm-pass').value;const go=$('#adm-go');go.disabled=true;go.textContent='Memeriksa…';
@@ -1404,6 +1405,7 @@ function setTab(k){if(storeState!=='ready')return;UI.tab=k;lsSet('pmo.tab',k);tr
 document.addEventListener('click',async e=>{
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,id=el.dataset.id,c=el.dataset.c,k=el.dataset.k;
+  if(a==='pw-eye'){const i=el.parentElement.querySelector('input'),show=i.type==='password';i.type=show?'text':'password';el.setAttribute('aria-pressed',String(show));el.setAttribute('aria-label',(show?'Sembunyikan':'Tampilkan')+(i.id==='lg-key'?' kode':' password'));i.focus();return}
   if(a==='scrim'){if(e.target===el&&!modalLock)closeModal();return}
   if(a==='tab')return setTab(k);
   if(a==='close-modal')return closeModal();
