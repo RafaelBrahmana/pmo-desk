@@ -307,11 +307,29 @@ button.hc.sel{border-color:var(--ink)}
 /* Vendors */
 .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
 @media (max-width:420px){.vgrid{grid-template-columns:1fr}}
-.vcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px;align-content:start;min-width:0}
+.vcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px;align-content:start;min-width:0;transition:border-color .15s,box-shadow .15s}
+.vcard:hover{border-color:var(--line-2)}
 .vcard.drag{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.vcard .hd{display:flex;gap:10px;align-items:start}
-.vcard .hd h3{font-size:15px;font-weight:600;line-height:1.3}
-.vcard .hd .acts{margin-left:auto;display:flex;gap:4px;flex:none}
+.vc-h{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:12px;align-items:center}
+.vc-av{width:42px;height:42px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:14px;letter-spacing:.02em}
+.vc-t h3{font-size:16px;font-weight:600;line-height:1.25;margin:0;overflow-wrap:anywhere}
+.vc-tags{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px}
+.vc-cat{font-size:12px;color:var(--muted)}
+.vc-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.vc-stat{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;display:grid;gap:1px}
+.vc-stat .k{font-size:11px;color:var(--muted)}
+.vc-stat .v{font-size:15.5px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.35;overflow-wrap:anywhere}
+.vc-stat .s{font-size:11.5px;color:var(--muted)}
+.vc-stat .s.warn{color:var(--a);font-weight:600}
+.vc-info{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 14px;margin:0;font-size:13px;align-items:baseline}
+.vc-info dt{color:var(--muted);font-size:12px}
+.vc-info dd{margin:0;text-align:right;font-weight:500;overflow-wrap:anywhere}
+.vc-note{margin:0;font-size:12.5px;color:var(--muted);background:var(--surface-2);padding:9px 12px;border-radius:10px;border-left:3px solid var(--line-2)}
+.vc-docs{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px}
+.vc-docs-h{display:flex;align-items:center;gap:10px}
+.vc-prog{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.vc-prog .bar{width:56px;height:6px;border-radius:3px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.vc-prog .bar i{display:block;height:100%;background:var(--g);border-radius:3px}
 .kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;font-size:12.5px}
 .kv div{min-width:0}
 .kv .k{font-size:11px;color:var(--muted);display:block}
@@ -319,15 +337,26 @@ button.hc.sel{border-color:var(--ink)}
 .stars{color:var(--a);letter-spacing:1px}
 .stars .off{color:var(--line-2)}
 .req{display:flex;gap:6px;flex-wrap:wrap}
-.docs{display:grid;gap:6px}
-.doc{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2)}
-.doc .fi{width:30px;height:36px;border-radius:4px;background:var(--r-soft);color:var(--r);display:grid;place-items:center;font-size:9px;font-weight:700;font-family:var(--f-mono)}
-.doc .fi.img{background:var(--accent-soft);color:var(--accent)}
-.doc .nm{font-weight:500;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.doc .sm{font-size:11.5px;color:var(--muted)}
-.doc .acts{display:flex;gap:2px}
-.drop{border:1px dashed var(--line-2);border-radius:6px;padding:10px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;background:none;width:100%}
-.drop:hover{border-color:var(--accent);color:var(--accent)}
+.doc2{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 8px 10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);transition:background .15s,border-color .15s}
+.doc2:hover{background:var(--surface-2);border-color:var(--line-2)}
+.doc2 .fi,.upi .fi{width:34px;height:40px;border-radius:6px;background:var(--r-soft);color:var(--r);display:grid;place-items:center;font-size:9.5px;font-weight:700;letter-spacing:.04em}
+.doc2 .fi.img{background:var(--accent-soft);color:var(--accent)}
+.d-name{all:unset;cursor:pointer;font-size:13px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;color:var(--ink)}
+.d-name:hover{color:var(--accent);text-decoration:underline}
+.d-name:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.d-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:5px;font-size:11.5px;color:var(--muted)}
+.d-meta .chip{font-size:10.5px;padding:1px 8px}
+.d-acts{display:flex;gap:2px}
+.icb{width:32px;height:32px;border-radius:8px;border:1px solid transparent;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;flex:none;padding:0}
+.icb:hover{background:var(--surface);border-color:var(--line-2);color:var(--accent)}
+.icb.danger:hover{color:var(--r);background:var(--r-soft);border-color:transparent}
+.icb svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.drop2{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:1.5px dashed var(--line-2);border-radius:10px;background:none;cursor:pointer;text-align:left;color:var(--ink);font:inherit}
+.drop2:hover,.vcard.drag .drop2{border-color:var(--accent);background:var(--accent-soft)}
+.drop2 svg{width:36px;height:36px;padding:8px;border-radius:50%;background:var(--accent-soft);flex:none;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.drop2:hover svg{background:var(--surface)}
+.drop2 b{display:block;font-size:13px;font-weight:600}
+.drop2 > span > span{display:block;font-size:11.5px;color:var(--muted)}
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:16px}
 @media (max-width:800px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -602,7 +631,12 @@ const ICON={
   meet:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   doc:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
   risk:'<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17.5v.01"/>',
-  lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'};
+  lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  dl:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>',
+  up:'<path d="M12 16V5M7 10l5-5 5 5M5 20h14"/>'};
 const ic=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
 function greeting(h){return h<4?'Selamat malam':h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam'}
 function vLogin(){const d=new Date();return`<section class="auth">
@@ -842,13 +876,20 @@ function vVendors(){
   let reqT=0,reqH=0;vs.forEach(v=>{const r=reqDocs(v),have=new Set(vDocs(v).map(d=>d.docType));reqT+=r.length;reqH+=r.filter(x=>have.has(x)).length});
   const cards=vs.map(v=>{const r=reqDocs(v),dd=vDocs(v).sort((a,b)=>(b.uploadedAt||'').localeCompare(a.uploadedAt||'')),have=new Set(dd.map(d=>d.docType));const left=v.contractEnd?diffDays(today(),v.contractEnd):null;
     const sc=v.status==='Aktif'?'g':v.status==='PKS ditandatangani'?'i':v.status==='Selesai'?'':'a';
-    return`<article class="vcard" data-drop="${esc(v.id)}"><div class="hd"><div style="min-width:0"><h3>${esc(v.name)}${exTag(v)}</h3><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><span class="chip ${sc}">${esc(v.status||'—')}</span><span class="chip">${esc(v.category||'—')}</span></div></div><span class="acts"><button class="btn ghost sm" data-act="edit" data-c="vendors" data-id="${esc(v.id)}">Edit</button></span></div>
-    <div class="kv"><div><span class="k">Proyek</span><span class="val code">${esc(pcode(v.projectId))}</span></div><div><span class="k">Nilai kontrak</span><span class="val num">${+v.contractValue?rp(v.contractValue):'—'}</span></div>
-    <div><span class="k">PIC vendor</span><span class="val">${esc(v.pic||'—')}</span></div><div><span class="k">Kontak</span><span class="val" style="user-select:all">${esc(v.contact||'—')}</span></div>
-    <div><span class="k">Kontrak berakhir</span><span class="val num" ${left!=null&&left<=60&&left>=0?'style="color:var(--a);font-weight:600"':''}>${v.contractEnd?fmtDate(v.contractEnd)+(left!=null&&left>=0?` (${left} hr)`:''):'—'}</span></div><div><span class="k">Penilaian kinerja</span><span class="val">${+v.rating?stars(v.rating):'<span class="faint">Belum dinilai</span>'}</span></div></div>
-    ${v.notes?`<div style="font-size:12.5px;color:var(--muted);background:var(--surface-2);padding:8px 10px;border-radius:6px">${esc(v.notes)}</div>`:''}
-    <div><div class="eyebrow" style="margin-bottom:6px">Kelengkapan dokumen · ${r.filter(x=>have.has(x)).length}/${r.length}</div><div class="req">${r.map(x=>`<span class="chip ${have.has(x)?'g':''}">${have.has(x)?'✓':'○'} ${esc(x)}</span>`).join('')}</div></div>
-    <div class="docs">${dd.map(docRow).join('')}${assets?`<button class="drop" data-act="upload" data-id="${esc(v.id)}">+ Unggah PDF atau tarik file ke kartu ini</button>`:''}</div></article>`}).join('');
+    const ini=String(v.name||'?').replace(/\b(PT|CV|Tbk)\b\.?/gi,'').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase()||'?';
+    const hv=r.filter(x=>have.has(x)).length,pc=r.length?Math.round(hv/r.length*100):0;
+    const endS=v.contractEnd?(left==null?'':left<0?`<span class="s">Berakhir ${-left} hari lalu</span>`:`<span class="s ${left<=60?'warn':''}">${left} hari lagi</span>`):'<span class="s">Belum ditetapkan</span>';
+    return`<article class="vcard" data-drop="${esc(v.id)}">
+    <div class="vc-h"><span class="vc-av" aria-hidden="true">${esc(ini)}</span><div class="vc-t"><h3>${esc(v.name)}${exTag(v)}</h3><div class="vc-tags"><span class="chip ${sc}">${esc(v.status||'—')}</span><span class="vc-cat">${esc(v.category||'—')}</span></div></div>
+      <button class="icb" data-act="edit" data-c="vendors" data-id="${esc(v.id)}" title="Edit vendor" aria-label="Edit ${esc(v.name)}">${ic('edit')}</button></div>
+    <div class="vc-stats"><div class="vc-stat"><span class="k">Nilai kontrak</span><span class="v">${+v.contractValue?rp(v.contractValue):'—'}</span><span class="s">${esc(mcode(v.projectId)==='Umum'?'Tanpa proyek':pcode(v.projectId))}</span></div>
+      <div class="vc-stat"><span class="k">Kontrak berakhir</span><span class="v">${v.contractEnd?fmtDate(v.contractEnd):'—'}</span>${endS}</div></div>
+    <dl class="vc-info"><dt>PIC vendor</dt><dd>${esc(v.pic||'—')}</dd><dt>Kontak</dt><dd style="user-select:all">${esc(v.contact||'—')}</dd><dt>Penilaian kinerja</dt><dd>${+v.rating?stars(v.rating):'<span class="faint" style="font-weight:400">Belum dinilai</span>'}</dd></dl>
+    ${v.notes?`<p class="vc-note">${esc(v.notes)}</p>`:''}
+    <div class="vc-docs"><div class="vc-docs-h"><span class="eyebrow">Dokumen</span><span class="vc-prog"><span class="bar"><i style="width:${pc}%"></i></span>${hv}/${r.length} wajib lengkap</span></div>
+      <div class="req">${r.map(x=>`<span class="chip ${have.has(x)?'g':''}">${have.has(x)?'✓':'○'} ${esc(x)}</span>`).join('')}</div>
+      ${dd.map(docRow).join('')}
+      ${assets?`<button class="drop2" data-act="upload" data-id="${esc(v.id)}">${ic('up')}<span><b>Unggah dokumen</b><span>PDF, PNG, JPG · maks 10 MB · atau tarik file ke kartu ini</span></span></button>`:''}</div></article>`}).join('');
   const q=UI.docQ.toLowerCase();
   const fd=docs.filter(d=>(!UI.docType||d.docType===UI.docType)&&(!q||(d.name+' '+(d.note||'')+' '+((S.vendors.find(v=>v.id===d.vendorId)||{}).name||'')).toLowerCase().includes(q))).sort((a,b)=>(b.uploadedAt||'').localeCompare(a.uploadedAt||''));
   return`<div class="toolbar"><h2>Vendor & dokumen</h2><button class="btn pri" data-act="add" data-c="vendors">+ Vendor</button></div>
@@ -860,8 +901,8 @@ function vVendors(){
   <section class="panel" style="margin-top:16px"><div class="ph"><h2>Arsip dokumen</h2><span class="sub">${fd.length} dokumen</span><span class="end filters"><input class="inp" id="doc-q" type="search" placeholder="Cari nama file atau vendor" value="${esc(UI.docQ)}"><select class="inp" id="doc-type"><option value="">Semua jenis</option>${DOC_TYPES.map(t=>`<option ${UI.docType===t?'selected':''}>${t}</option>`).join('')}</select></span></div>
   ${fd.length?`<div class="tbl-wrap"><table><thead><tr><th>Dokumen</th><th>Jenis</th><th>Vendor</th><th>Proyek</th><th class="r">Ukuran</th><th>Diunggah</th><th></th></tr></thead><tbody>${fd.map(d=>`<tr><td><b style="font-weight:500">${esc(d.name)}</b>${d.note?`<div class="faint" style="font-size:12px">${esc(d.note)}</div>`:''}</td><td><span class="chip">${esc(d.docType)}</span></td><td>${esc((S.vendors.find(v=>v.id===d.vendorId)||{}).name||'—')}</td><td class="code">${esc(pcode(d.projectId))}</td><td class="r num">${fmtSize(d.size||0)}</td><td class="num">${d.uploadedAt?fmtDate(d.uploadedAt.slice(0,10)):'—'}</td><td class="r" style="white-space:nowrap">${docBtns(d)}</td></tr>`).join('')}</tbody></table></div>`:emptyBox(docs.length?'Tidak ada dokumen yang cocok dengan filter.':'Belum ada dokumen. Unggah PDF dari kartu vendor di atas.')}</section>`;
 }
-function docBtns(d){return`<button class="btn ghost sm" data-act="doc-view" data-id="${esc(d.id)}">Lihat</button><button class="btn ghost sm" data-act="doc-save" data-id="${esc(d.id)}">Unduh</button>${assets?`<button class="btn ghost sm danger" data-act="doc-del" data-id="${esc(d.id)}" aria-label="Hapus dokumen">Hapus</button>`:''}`}
-function docRow(d){const img=/^image\//.test(d.contentType||'');return`<div class="doc"><span class="fi ${img?'img':''}">${img?'IMG':'PDF'}</span><div style="min-width:0"><div class="nm" title="${esc(d.name)}">${esc(d.name)}</div><div class="sm">${esc(d.docType)} · ${fmtSize(d.size||0)} · ${d.uploadedAt?fmtDS(d.uploadedAt.slice(0,10)):''}</div></div><span class="acts">${docBtns(d)}</span></div>`}
+function docBtns(d){const i=esc(d.id);return`<span class="d-acts"><button class="icb" data-act="doc-view" data-id="${i}" title="Lihat" aria-label="Lihat ${esc(d.name)}">${ic('eye')}</button><button class="icb" data-act="doc-save" data-id="${i}" title="Unduh" aria-label="Unduh ${esc(d.name)}">${ic('dl')}</button><button class="icb danger" data-act="doc-del" data-id="${i}" title="Hapus" aria-label="Hapus ${esc(d.name)}">${ic('trash')}</button></span>`}
+function docRow(d){const img=/^image\//.test(d.contentType||'');return`<div class="doc2"><span class="fi ${img?'img':''}">${img?'IMG':'PDF'}</span><div style="min-width:0"><button class="d-name" data-act="doc-view" data-id="${esc(d.id)}" title="${esc(d.name)}">${esc(d.name)}</button><div class="d-meta"><span class="chip">${esc(d.docType)}</span><span>${fmtSize(d.size||0)}</span>${d.uploadedAt?`<span>·</span><span>${fmtDS(String(d.uploadedAt).slice(0,10))}</span>`:''}${d.updatedBy?`<span>·</span><span>${esc(d.updatedBy)}</span>`:''}</div></div>${docBtns(d)}</div>`}
 
 /* ---------- risks ---------- */
 function vRisks(){
