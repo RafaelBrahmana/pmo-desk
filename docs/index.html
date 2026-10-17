@@ -406,8 +406,10 @@ function uid(c){return c.charAt(0)+'_'+Math.random().toString(36).slice(2,12)}
 /* ---- mode tim ---- */
 const Remote={
   async call(action,...args){
-    let r;try{r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({key:SESSION.key,who:SESSION.name,action,args}),redirect:'follow'})}
-    catch(e){throw Object.assign(new Error('Tidak bisa terhubung ke server Google. Periksa internet lalu coba lagi.'),{code:'NET'})}
+    const ctl=new AbortController();const lim=/upload|getFile/.test(action)?120000:60000;const tm=setTimeout(()=>ctl.abort(),lim);
+    let r;try{r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({key:SESSION.key,who:SESSION.name,action,args}),redirect:'follow',signal:ctl.signal})}
+    catch(e){clearTimeout(tm);if(e&&e.name==='AbortError')throw Object.assign(new Error('Server Google terlalu lama merespons. Coba lagi; bila terus terjadi, periksa internet atau status deploy Web App.'),{code:'NET'});throw Object.assign(new Error('Tidak bisa terhubung ke server Google. Periksa internet lalu coba lagi.'),{code:'NET'})}
+    clearTimeout(tm);
     if(!r.ok)throw Object.assign(new Error('Server Google tidak merespons (kode '+r.status+'). Coba lagi sebentar lagi.'),{code:'NET'});
     let j;try{j=await r.json()}catch(e){throw Object.assign(new Error('Balasan server tidak terbaca. Pastikan Web App di-deploy dengan akses "Anyone".'),{code:'NET'})}
     if(!j.ok)throw Object.assign(new Error(j.error||'Terjadi kesalahan di server.'),{code:j.code||'ERROR'});
@@ -454,17 +456,24 @@ const Local={
 };
 const B=MODE==='remote'?Remote:Local;
 
-function applyData(d){if(!d)return;COLS.forEach(c=>S[c]=Array.isArray(d[c])?d[c]:[]);storeState='ready';lastSync=new Date();schedule()}
+function applyData(d,fromCache){if(!d)return;COLS.forEach(c=>S[c]=Array.isArray(d[c])?d[c]:[]);storeState='ready';
+  if(fromCache){lastSync=d._ts?new Date(d._ts):null}else{lastSync=new Date();if(MODE==='remote'){const o={_ts:lastSync.toISOString()};COLS.forEach(c=>o[c]=S[c]);lsSet('pmo.cache',JSON.stringify(o))}}schedule()}
 async function boot(){
   try{const t=lsGet('pmo.tab');if(t&&TABS.some(x=>x[0]===t))UI.tab=t}catch(e){}
   const h=(location.hash||'').slice(1);if(TABS.some(x=>x[0]===h))UI.tab=h;
   SESSION.name=lsGet('pmo.name')||'';SESSION.key=lsGet('pmo.key')||'';
-  if(MODE==='remote'&&!SESSION.key){storeState='login';render();return}
+  if(MODE==='remote'&&!SESSION.key){storeState='login';render();warmUp();return}
+  if(MODE==='remote'){let c=null;try{c=JSON.parse(lsGet('pmo.cache')||'null')}catch(e){}if(c&&Array.isArray(c.projects))applyData(c,true)}
   render();await loadAll();
 }
+/* Membangunkan server Google selagi pengguna mengetik kode akses, agar login lebih cepat. */
+function warmUp(){try{fetch(API,{method:'GET',redirect:'follow'}).catch(()=>{})}catch(e){}}
 async function loadAll(){
+  const hadCache=storeState==='ready';
   try{applyData(await B.getAll());if(MODE==='remote')startPolling()}
-  catch(e){if(e.code==='AUTH'){SESSION.key='';lsSet('pmo.key',null);storeState='login';errMsg=e.message}else{storeState='error';errMsg=e.message}render()}
+  catch(e){if(e.code==='AUTH'){logout(e.message);return}
+    if(hadCache){toast('Menampilkan data terakhir. '+e.message,true);startPolling();return}
+    storeState='error';errMsg=e.message;render()}
 }
 let polling=false;function startPolling(){if(polling)return;polling=true;setInterval(poll,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()})}
 async function poll(){
@@ -474,14 +483,15 @@ async function poll(){
     applyData(d)}catch(e){if(e.code==='AUTH'){logout(e.message)}}
 }
 async function sync(){const b=$('#sync');if(b){b.disabled=true;b.textContent='Memuat…'}try{applyData(await B.getAll());toast('Data terbaru dimuat')}catch(e){toast(e.message,true);if(e.code==='AUTH')logout(e.message)}finally{const b2=$('#sync');if(b2){b2.disabled=false;b2.textContent='Muat ulang'}}}
-function logout(msg){SESSION.key='';lsSet('pmo.key',null);COLS.forEach(c=>S[c]=[]);storeState='login';errMsg=msg||'';UI.projectOpen=null;$('#drawer-root').innerHTML='';closeModal();render()}
-async function call(fn,...args){busy++;try{applyData(await B[fn](...args));return true}catch(e){toast(e.message,true);if(e.code==='AUTH')logout(e.message);return false}finally{busy--}}
+function logout(msg){SESSION.key='';lsSet('pmo.key',null);lsSet('pmo.cache',null);COLS.forEach(c=>S[c]=[]);storeState='login';errMsg=msg||'';UI.projectOpen=null;$('#drawer-root').innerHTML='';closeModal();render()}
+async function call(fn,...args){busy++;const slow=MODE==='remote'?setTimeout(()=>{if(!$('#toast-root .err'))toast(fn==='uploadDocument'?'Mengunggah ke Google Drive…':'Menyimpan ke Google Sheets…')},700):0;try{applyData(await B[fn](...args));clearTimeout(slow);return true}catch(e){clearTimeout(slow);toast(e.message,true);if(e.code==='AUTH')logout(e.message);return false}finally{busy--}}
 async function login(ev){ev.preventDefault();const f=ev.target;const name=f.elements['lg-name'].value.trim(),key=f.elements['lg-key'].value.trim().toUpperCase();
   const er=$('#lg-err');if(!name||!key){er.textContent='Isi nama dan kode akses.';return}
-  const btn=f.querySelector('[type=submit]');btn.disabled=true;btn.textContent='Memeriksa…';er.textContent='';
+  const btn=f.querySelector('[type=submit]');btn.disabled=true;btn.textContent='Menghubungkan ke Google…';er.textContent='';
+  const hint=setTimeout(()=>{const e2=$('#lg-err');if(e2&&!e2.textContent)e2.innerHTML='<span class="muted">Server Google sedang disiapkan. Login pertama biasanya 5–15 detik; berikutnya dashboard langsung terbuka.</span>'},3500);
   SESSION.name=name;SESSION.key=key;
-  try{const d=await B.getAll();lsSet('pmo.name',name);lsSet('pmo.key',key);errMsg='';applyData(d);startPolling();toast('Selamat datang, '+name)}
-  catch(e){SESSION.key='';er.textContent=e.message;btn.disabled=false;btn.textContent='Masuk'}}
+  try{const d=await B.getAll();clearTimeout(hint);lsSet('pmo.name',name);lsSet('pmo.key',key);errMsg='';applyData(d);startPolling();toast('Selamat datang, '+name)}
+  catch(e){clearTimeout(hint);SESSION.key='';const e2=$('#lg-err');if(e2)e2.textContent=e.message;btn.disabled=false;btn.textContent='Masuk'}}
 function vLogin(){return`<form class="panel login" id="login-form" novalidate><div><h2 style="font-size:20px">Masuk ke PMO Desk</h2><p class="muted" style="margin:6px 0 0">Gunakan kode akses tim yang dibagikan oleh PMO.</p></div>
   <div class="fld"><label for="lg-name">Nama Anda</label><input id="lg-name" name="lg-name" autocomplete="name" placeholder="misal: Rafael" value="${esc(SESSION.name)}"></div>
   <div class="fld"><label for="lg-key">Kode akses tim</label><input id="lg-key" name="lg-key" autocomplete="off" placeholder="XXXX-XXXX-XXXX" style="font-family:var(--f-mono);text-transform:uppercase"></div>
@@ -512,7 +522,7 @@ function renderHeader(){
 function render(){
   renderHeader();
   const main=$('#main');
-  if(storeState==='loading'){main.innerHTML='<div class="skel" aria-label="Memuat data"><div></div><div style="height:140px"></div><div style="height:260px"></div></div>';return}
+  if(storeState==='loading'){main.innerHTML=(MODE==='remote'?'<p class="muted" style="margin:0 0 14px">Memuat data dari Google Sheets tim… biasanya 5–15 detik saat pertama dibuka.</p>':'')+'<div class="skel" aria-label="Memuat data"><div></div><div style="height:140px"></div><div style="height:260px"></div></div>';return}
   if(storeState==='login'){main.innerHTML=vLogin();const f=$('#login-form');f.addEventListener('submit',login);setTimeout(()=>{const i=SESSION.name?$('#lg-key'):$('#lg-name');i&&i.focus()},30);return}
   if(storeState==='error'){main.innerHTML=`<div class="panel"><div class="empty"><b>Data belum bisa dimuat.</b><span>${esc(errMsg)}</span><button class="btn pri" data-act="retry">Coba lagi</button></div></div>`;return}
   const v0={overview:vOverview,projects:vProjects,timeline:vTimeline,meetings:vMeetings,vendors:vVendors,risks:vRisks};
