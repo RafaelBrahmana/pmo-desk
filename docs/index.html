@@ -5,39 +5,39 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Corporate Banking PMO Desk</title>
 <meta name="description" content="Dashboard PMO Corporate Banking: portofolio proyek, timeline, meeting, vendor & dokumen, dan risiko.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%230E6390%27/%3E%3Cpath d=%27M5 19h14M7 19v-7M17 19v-7M10 19v-5M14 19v-5M4 12l8-5 8 5%27 fill=%27none%27 stroke=%27white%27 stroke-width=%271.8%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%275%27 fill=%27%23790008%27/%3E%3Cpath d=%27M5 19h14M7 19v-7M17 19v-7M10 19v-5M14 19v-5M4 12l8-5 8 5%27 fill=%27none%27 stroke=%27white%27 stroke-width=%271.8%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
 <script src="config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: command desk — ink band header + tab rail; 12-col panel grid, summary on top, registers below */
+/* Layout: CIMB Niaga brand header (logo + maroon tab rail) over a 12-col panel grid; 12-col panel grid, summary on top, registers below */
 :root{
-  --bg:#EDF0F4; --surface:#FFFFFF; --surface-2:#F5F7FA; --ink:#0F1B2B; --muted:#566376; --faint:#8592A4;
-  --line:#DCE1E8; --line-2:#C7CFDA;
-  --band:#0F1B2B; --band-ink:#E8EDF4; --band-muted:#93A2B6; --band-line:#24344C; --band-2:#17263B;
-  --accent:#0E6390; --accent-ink:#FFFFFF; --accent-soft:#E1EDF5; --accent-2:#5FA3C7;
-  --g:#2B8143; --g-soft:#E2F1E6; --a:#B47400; --a-soft:#FAEFD8; --r:#BF382E; --r-soft:#FAE3E0;
-  --scrim:rgba(10,18,30,.48); --shadow:0 1px 2px rgba(15,27,43,.06),0 8px 24px rgba(15,27,43,.06);
-  --f-display:"Sora",ui-sans-serif,system-ui,sans-serif;
-  --f-body:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --bg:#F5F2F2; --surface:#FFFFFF; --surface-2:#F9F6F6; --ink:#1F1A1B; --muted:#6B5F61; --faint:#9A8E90;
+  --line:#E8E0E1; --line-2:#D8CCCE;
+  --band:#FFFFFF; --band-ink:#1F1A1B; --band-muted:#6B5F61; --band-line:#E8E0E1; --band-2:#F9F6F6;
+  --accent:#790008; --accent-ink:#FFFFFF; --accent-soft:#F7E6E7; --accent-2:#C2545A; --brand-red:#ED3024; --data:#3E4C5E; --logo-plate:#FFFFFF;
+  --g:#2B8143; --g-soft:#E2F1E6; --a:#B47400; --a-soft:#FAEFD8; --r:#D3362B; --r-soft:#FCE5E2;
+  --scrim:rgba(30,10,12,.48); --shadow:0 1px 2px rgba(60,10,14,.06),0 8px 24px rgba(60,10,14,.07);
+  --f-display:"Poppins",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-body:"Poppins",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"Poppins",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0A111B; --surface:#111B27; --surface-2:#172330; --ink:#E5EBF2; --muted:#9AA8B9; --faint:#6E7D90;
-  --line:#223142; --line-2:#2E4055;
-  --band:#060B12; --band-ink:#E5EBF2; --band-muted:#8494A8; --band-line:#1C2A3B; --band-2:#0F1A27;
-  --accent:#4BA6D6; --accent-ink:#06121C; --accent-soft:#12324A; --accent-2:#2D6F96;
-  --g:#4CC07A; --g-soft:#143323; --a:#E5A83A; --a-soft:#3A2C10; --r:#F06A5F; --r-soft:#3D1A18;
+  --bg:#130E0F; --surface:#1C1516; --surface-2:#241B1C; --ink:#F2EBEC; --muted:#B5A8AA; --faint:#857A7C;
+  --line:#33292A; --line-2:#47393B;
+  --band:#1C1516; --band-ink:#F2EBEC; --band-muted:#B5A8AA; --band-line:#33292A; --band-2:#241B1C;
+  --accent:#E7737A; --accent-ink:#1C0508; --accent-soft:#3D1C1F; --accent-2:#A2464C; --brand-red:#FF5A4C; --data:#A3B3C6; --logo-plate:#FFFFFF;
+  --g:#4CC07A; --g-soft:#143323; --a:#E5A83A; --a-soft:#3A2C10; --r:#FF6B5E; --r-soft:#401A17;
   --scrim:rgba(0,0,0,.6); --shadow:0 1px 2px rgba(0,0,0,.3);
   color-scheme:dark;
 }}
 :root[data-theme="dark"]{
-  --bg:#0A111B; --surface:#111B27; --surface-2:#172330; --ink:#E5EBF2; --muted:#9AA8B9; --faint:#6E7D90;
-  --line:#223142; --line-2:#2E4055;
-  --band:#060B12; --band-ink:#E5EBF2; --band-muted:#8494A8; --band-line:#1C2A3B; --band-2:#0F1A27;
-  --accent:#4BA6D6; --accent-ink:#06121C; --accent-soft:#12324A; --accent-2:#2D6F96;
-  --g:#4CC07A; --g-soft:#143323; --a:#E5A83A; --a-soft:#3A2C10; --r:#F06A5F; --r-soft:#3D1A18;
+  --bg:#130E0F; --surface:#1C1516; --surface-2:#241B1C; --ink:#F2EBEC; --muted:#B5A8AA; --faint:#857A7C;
+  --line:#33292A; --line-2:#47393B;
+  --band:#1C1516; --band-ink:#F2EBEC; --band-muted:#B5A8AA; --band-line:#33292A; --band-2:#241B1C;
+  --accent:#E7737A; --accent-ink:#1C0508; --accent-soft:#3D1C1F; --accent-2:#A2464C; --brand-red:#FF5A4C; --data:#A3B3C6; --logo-plate:#FFFFFF;
+  --g:#4CC07A; --g-soft:#143323; --a:#E5A83A; --a-soft:#3A2C10; --r:#FF6B5E; --r-soft:#401A17;
   --scrim:rgba(0,0,0,.6); --shadow:0 1px 2px rgba(0,0,0,.3);
   color-scheme:dark;
 }
@@ -55,26 +55,31 @@ button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* Header band */
-.band{background:var(--band);color:var(--band-ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:20;border-bottom:1px solid var(--band-line)}
+.band{background:var(--band);color:var(--band-ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:20;border-bottom:1px solid var(--band-line);box-shadow:0 1px 0 var(--band-line),0 6px 18px rgba(60,10,14,.05)}
+.brandbar{height:4px;background:linear-gradient(90deg,var(--accent) 0 72%,var(--brand-red) 72% 100%)}
+.logo{display:block;background:var(--logo-plate);border-radius:6px;padding:5px 8px;flex:none}
+.logo img{display:block;height:30px;width:auto}
+.sep{width:1px;height:34px;background:var(--line-2);flex:none}
+@media (max-width:640px){.sep,.brand p{display:none}.logo img{height:24px}.band{position:static}}
 .band-in{max-width:1360px;margin:0 auto;padding-inline:20px}
 .band-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:14px 10px}
-.mark{width:34px;height:34px;border-radius:8px;background:var(--accent);display:grid;place-items:center;flex:none}
-.mark svg{width:20px;height:20px}
-.brand h1{font-size:17px;font-weight:600;color:var(--band-ink)}
+.brand{min-width:0}
+.brand h1{font-size:17px;font-weight:600;color:var(--band-ink);letter-spacing:-.01em;line-height:1.25}
 .brand p{margin:0;font-size:12px;color:var(--band-muted)}
 .band-tools{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .today{font-family:var(--f-mono);font-size:12px;color:var(--band-muted);padding:6px 10px;border:1px solid var(--band-line);border-radius:6px}
 .mode{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:6px;border:1px solid var(--band-line);color:var(--band-muted)}
-.mode.live{color:#7FD3A0;border-color:#2B5C3E}
+.mode.live{color:var(--g);border-color:transparent;background:var(--g-soft)}
 .login{max-width:420px;margin:48px auto;display:grid;gap:14px}
 .login .fld input{border:1px solid var(--line-2);background:var(--surface);border-radius:6px;padding:10px 12px;width:100%}
 .err{color:var(--r);font-size:13px;min-height:1.2em}
 .scope{background:var(--band-2);color:var(--band-ink);border:1px solid var(--band-line);border-radius:6px;padding:6px 10px;max-width:260px}
 .tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-bottom:-1px}
 .tabs::-webkit-scrollbar{display:none}
-.tab{background:none;border:0;border-bottom:2px solid transparent;color:var(--band-muted);padding:10px 14px;cursor:pointer;white-space:nowrap;font-weight:500;display:flex;gap:8px;align-items:center}
+.tab{background:none;border:0;border-bottom:3px solid transparent;color:var(--band-muted);padding:10px 14px;cursor:pointer;white-space:nowrap;font-weight:500;display:flex;gap:8px;align-items:center}
 .tab:hover{color:var(--band-ink)}
-.tab[aria-selected="true"]{color:var(--band-ink);border-bottom-color:var(--accent)}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab[aria-selected="true"] .ct{background:var(--accent-soft);color:var(--accent);border-color:transparent}
 .tab .ct{font-family:var(--f-mono);font-size:11px;background:var(--band-2);border:1px solid var(--band-line);border-radius:10px;padding:0 6px;color:var(--band-muted)}
 
 /* Page */
@@ -168,7 +173,7 @@ td.r,th.r{text-align:right}
 .bud .lab span.n{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
 .btrack{position:relative;height:18px;background:var(--surface-2);border-radius:4px;border:1px solid var(--line)}
 .btrack .bgt{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--accent-soft)}
-.btrack .spt{position:absolute;left:0;top:4px;bottom:4px;border-radius:2px;background:var(--accent)}
+.btrack .spt{position:absolute;left:0;top:4px;bottom:4px;border-radius:2px;background:var(--data)}
 .btrack .spt.over{background:var(--r)}
 .btrack .ev{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
 .bmeta{font-size:12px;color:var(--muted);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap}
@@ -309,18 +314,20 @@ button.hc.sel{border-color:var(--ink)}
 </head>
 <body>
 <header class="band">
+  <div class="brandbar" aria-hidden="true"></div>
   <div class="band-in">
     <div class="band-top">
-      <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V10M19 21V10M9 21v-7M15 21v-7M2 10l10-6 10 6"/></svg></div>
-      <div class="brand"><h1>Corporate Banking PMO Desk</h1><p>Portofolio proyek · vendor · meeting · risiko</p></div>
+      <span class="logo"><img src="assets/cimb-niaga.png" alt="CIMB Niaga" width="630" height="96"></span>
+      <span class="sep" aria-hidden="true"></span>
+      <div class="brand"><h1>Corporate Banking PMO Desk</h1><p>Alat internal tim PMO · proyek · vendor · meeting · risiko</p></div>
       <div class="band-tools">
         <label for="scope" class="eyebrow" style="color:var(--band-muted)">Fokus</label>
         <select id="scope" class="scope"><option value="all">Semua proyek</option></select>
         <span class="today" id="today"></span>
         <span class="mode" id="mode"></span>
         <span class="today" id="who" hidden></span>
-        <button class="btn sm" id="sync" data-act="sync" hidden style="background:var(--band-2);color:var(--band-ink);border-color:var(--band-line)">Muat ulang</button>
-        <button class="btn sm" id="logout" data-act="logout" hidden style="background:var(--band-2);color:var(--band-ink);border-color:var(--band-line)">Keluar</button>
+        <button class="btn sm" id="sync" data-act="sync" hidden style="background:var(--surface);color:var(--band-ink);border-color:var(--line-2)">Muat ulang</button>
+        <button class="btn sm" id="logout" data-act="logout" hidden style="background:var(--surface);color:var(--band-ink);border-color:var(--line-2)">Keluar</button>
       </div>
     </div>
     <nav class="tabs" role="tablist" id="tabs"></nav>
@@ -492,7 +499,7 @@ async function login(ev){ev.preventDefault();const f=ev.target;const name=f.elem
   SESSION.name=name;SESSION.key=key;
   try{const d=await B.getAll();clearTimeout(hint);lsSet('pmo.name',name);lsSet('pmo.key',key);errMsg='';applyData(d);startPolling();toast('Selamat datang, '+name)}
   catch(e){clearTimeout(hint);SESSION.key='';const e2=$('#lg-err');if(e2)e2.textContent=e.message;btn.disabled=false;btn.textContent='Masuk'}}
-function vLogin(){return`<form class="panel login" id="login-form" novalidate><div><h2 style="font-size:20px">Masuk ke PMO Desk</h2><p class="muted" style="margin:6px 0 0">Gunakan kode akses tim yang dibagikan oleh PMO.</p></div>
+function vLogin(){return`<form class="panel login" id="login-form" novalidate><div><h2 style="font-size:20px">Masuk ke PMO Desk</h2><p class="muted" style="margin:6px 0 0">Alat internal tim PMO Corporate Banking. Gunakan kode akses tim yang dibagikan oleh PMO.</p></div>
   <div class="fld"><label for="lg-name">Nama Anda</label><input id="lg-name" name="lg-name" autocomplete="name" placeholder="misal: Rafael" value="${esc(SESSION.name)}"></div>
   <div class="fld"><label for="lg-key">Kode akses tim</label><input id="lg-key" name="lg-key" autocomplete="off" placeholder="XXXX-XXXX-XXXX" style="font-family:var(--f-mono);text-transform:uppercase"></div>
   <div class="err" id="lg-err" role="alert">${esc(errMsg)}</div><button type="submit" class="btn pri" style="justify-content:center;padding:10px">Masuk</button>
@@ -589,7 +596,7 @@ function vOverview(){
   <section class="panel s4"><div class="ph"><h2>Status RAG portofolio</h2><span class="sub">Proyek aktif</span></div>${donut(act)}</section>
   <section class="panel s8"><div class="ph"><h2>Kesehatan jadwal</h2><span class="sub">Progres aktual vs waktu yang sudah berjalan</span><span class="end lg"><span><i style="background:var(--accent)"></i>Progres</span><span><i style="background:var(--ink);width:2px;height:12px"></i>Rencana per hari ini</span></span></div>${healthTable(act)}</section>
   <section class="panel s7"><div class="ph"><h2>Anggaran vs realisasi</h2><span class="sub">Earned value = anggaran × progres</span></div>
-    <div class="lg" style="margin-bottom:14px"><span><i style="background:var(--accent-soft);border:1px solid var(--line)"></i>Anggaran</span><span><i style="background:var(--accent)"></i>Realisasi</span><span><i style="background:var(--r)"></i>Realisasi > nilai progres</span><span><i style="background:var(--ink);width:2px;height:12px"></i>Nilai progres (EV)</span></div>${budgetBars(act)}</section>
+    <div class="lg" style="margin-bottom:14px"><span><i style="background:var(--accent-soft);border:1px solid var(--line)"></i>Anggaran</span><span><i style="background:var(--data)"></i>Realisasi</span><span><i style="background:var(--r)"></i>Realisasi > nilai progres</span><span><i style="background:var(--ink);width:2px;height:12px"></i>Nilai progres (EV)</span></div>${budgetBars(act)}</section>
   <section class="panel s5"><div class="ph"><h2>Peta risiko</h2><span class="sub">${openR} risiko terbuka</span><span class="end"><button class="link" data-act="tab" data-k="risks">Lihat register →</button></span></div>${heatmap(scoped('risks').filter(rOpen),false)}</section>
   <section class="panel s6"><div class="ph"><h2>Meeting mendatang</h2><span class="end"><button class="btn sm" data-act="add" data-c="meetings">+ Jadwalkan</button></span></div>${upcomingMeetings(5)}</section>
   <section class="panel s6"><div class="ph"><h2>Milestone terdekat</h2><span class="sub">Terlambat & 30 hari ke depan</span><span class="end"><button class="btn sm" data-act="add" data-c="milestones">+ Milestone</button></span></div>${nearMilestones()}</section>
