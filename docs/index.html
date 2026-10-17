@@ -406,34 +406,6 @@ button.hc.sel{border-color:var(--ink)}
 .spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--accent-soft);border-top-color:var(--accent);flex:none;animation:spin .8s linear infinite}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
 
-/* Deck */
-.tab-lock{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
-.deck-lock{max-width:400px;margin:40px auto;display:grid;gap:12px;justify-items:stretch;text-align:left}
-.deck-lock .dl-ic svg{width:44px;height:44px;padding:11px;border-radius:12px;background:var(--accent-soft);fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.deck-lock h2{font-size:20px;font-weight:700;margin:0}
-.deck-lock p{margin:0;font-size:13px}
-.deck-lock .fld input{border:1px solid var(--line-2);background:var(--surface-2);border-radius:10px;padding:11px 13px;width:100%}
-.deck-lock .err:empty{display:none}
-.deck-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
-@media (max-width:420px){.deck-grid{grid-template-columns:1fr}}
-.deck{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
-.deck:hover{border-color:var(--line-2)}
-.deck-top{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:12px;align-items:start}
-.deck-ic{width:42px;height:48px;border-radius:8px;display:grid;place-items:center;font-size:10px;font-weight:700;letter-spacing:.04em}
-.deck-ic.pdf{background:var(--r-soft);color:var(--r)}
-.deck-ic.lnk{background:var(--accent-soft);color:var(--accent)}
-.deck-ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.deck h3{font-size:15px;font-weight:600;line-height:1.3;margin:0;overflow-wrap:anywhere}
-.deck-desc{margin:0;font-size:13px;color:var(--muted);line-height:1.55}
-.deck-foot{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:12px;font-size:12px;margin-top:auto}
-.deck-foot .faint{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.deck-foot .btn{flex:none}
-.deck-foot .btn svg,.toolbar .btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.seg{display:flex;gap:8px;flex-wrap:wrap}
-.seg label{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--line-2);border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;color:var(--ink)}
-.seg label:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
-.seg input{accent-color:var(--accent);margin:0}
-
 /* Footer credit */
 .foot{max-width:1360px;margin:0 auto;padding-inline:20px;padding-block:0 28px;font-size:11.5px;color:var(--faint);display:flex;justify-content:center}
 .foot span{border-top:1px solid var(--line);padding-top:14px;min-width:min(320px,100%);text-align:center}
@@ -521,7 +493,7 @@ const loaded={};
 let storeState='loading',errMsg='',busy=0,lastSync=null;const assets=true,downloads=true;
 const UI={tab:'overview',scope:'all',calMonth:null,calDay:null,riskCell:null,docQ:'',docType:'',projectOpen:null};
 
-const TABS=[['overview','Ringkasan'],['projects','Proyek'],['timeline','Timeline'],['meetings','Meeting'],['vendors','Vendor & Dokumen'],['risks','Risiko'],['decks','Deck']];
+const TABS=[['overview','Ringkasan'],['projects','Proyek'],['timeline','Timeline'],['meetings','Meeting'],['vendors','Vendor & Dokumen'],['risks','Risiko']];
 const PHASES=['Inisiasi','Perencanaan','Eksekusi','UAT','Go-Live','Selesai'];
 const RAG={g:'On track',a:'Perlu perhatian',r:'Kritis'};
 const MS_STAT=['Belum mulai','Berjalan','Selesai','Terblokir'];
@@ -602,8 +574,6 @@ const Remote={
   clearExamples(){return this.call('clearExamples')},
   uploadDocument(m,b){return this.call('uploadDocument',m,b)},
   getFile(id){return this.call('getFile',id)},
-  getDecks(p){return this.call('getDecks',p)},saveDeck(p,i){return this.call('saveDeck',p,i)},deleteDeck(p,id){return this.call('deleteDeck',p,id)},
-  uploadDeck(p,m,b){return this.call('uploadDeck',p,m,b)},getDeckFile(p,id){return this.call('getDeckFile',p,id)},
 };
 /* ---- mode demo: data di browser ini ---- */
 const IDB={db:null,
@@ -635,17 +605,6 @@ const Local={
     d.documents.push({id,vendorId:v.id,projectId:v.projectId||'',name:meta.name,docType:meta.docType,note:meta.note||'',fileId:id,size:Math.round(b64.length*3/4),contentType:meta.contentType,uploadedAt:new Date().toISOString(),example:false,updatedBy:SESSION.name||''});
     this.save();return this.out()},
   async getFile(id){const f=await IDB.get(id);if(!f)throw new Error('File tidak ditemukan di browser ini.');return f},
-  deckHash:'25f43b1486ad95a1398e3eeb3d83bc4010015fcc9bedb35b432e00298d5021f7',
-  async deckChk(p){const h=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(String(p||''))))).map(b=>b.toString(16).padStart(2,'0')).join('');
-    if(h!==this.deckHash){const e=new Error('Password Deck salah.');e.code='DECK_AUTH';throw e}const d=this.load();if(!Array.isArray(d.decks))d.decks=[];return d},
-  async getDecks(p){return JSON.parse(JSON.stringify((await this.deckChk(p)).decks))},
-  async saveDeck(p,item){const d=await this.deckChk(p);const i=item.id?d.decks.findIndex(x=>x.id===item.id):-1;const now={updatedAt:new Date().toISOString(),updatedBy:SESSION.name||''};
-    if(i>=0)d.decks[i]=Object.assign({},d.decks[i],item,now);else d.decks.push(Object.assign({},item,{id:uid('decks')},now));this.save();return this.getDecks(p)},
-  async deleteDeck(p,id){const d=await this.deckChk(p);try{await IDB.del('deck:'+id)}catch(e){}d.decks=d.decks.filter(x=>x.id!==id);this.save();return this.getDecks(p)},
-  async uploadDeck(p,meta,b64){const d=await this.deckChk(p);const id=meta.id||uid('decks');try{await IDB.put('deck:'+id,{b64,contentType:meta.contentType,name:meta.name})}catch(e){throw new Error('Browser menolak menyimpan file.')}
-    const row=Object.assign({},meta,{id,kind:'pdf',url:'',fileId:'deck:'+id,size:Math.round(b64.length*3/4),updatedAt:new Date().toISOString(),updatedBy:SESSION.name||''});
-    const i=d.decks.findIndex(x=>x.id===id);if(i>=0)d.decks[i]=Object.assign({},d.decks[i],row);else d.decks.push(row);this.save();return this.getDecks(p)},
-  async getDeckFile(p,id){await this.deckChk(p);const f=await IDB.get('deck:'+id);if(!f)throw new Error('File tidak ditemukan di browser ini.');return f},
 };
 const B=MODE==='remote'?Remote:Local;
 
@@ -676,7 +635,7 @@ async function poll(){
     applyData(d)}catch(e){if(e.code==='AUTH'){logout(e.message)}}
 }
 async function sync(){const b=$('#sync');if(b){b.disabled=true;b.classList.add('spin')}try{applyData(await B.getAll());toast('Data terbaru dimuat')}catch(e){toast(e.message,true);if(e.code==='AUTH')logout(e.message)}finally{const b2=$('#sync');if(b2){b2.disabled=false;b2.classList.remove('spin')}}}
-function logout(msg){SESSION.key='';lsSet('pmo.key',null);lsSet('pmo.cache',null);if(typeof DocCache!=='undefined')DocCache.clear();COLS.forEach(c=>S[c]=[]);deckLock();storeState='login';errMsg=msg||'';UI.projectOpen=null;$('#drawer-root').innerHTML='';closeModal();render()}
+function logout(msg){SESSION.key='';lsSet('pmo.key',null);lsSet('pmo.cache',null);if(typeof DocCache!=='undefined')DocCache.clear();COLS.forEach(c=>S[c]=[]);storeState='login';errMsg=msg||'';UI.projectOpen=null;$('#drawer-root').innerHTML='';closeModal();render()}
 async function call(fn,...args){busy++;const t0=Date.now(),lbl=fn==='uploadDocument'?'Mengunggah ke Google Drive…':/delete|clear/i.test(fn)?'Menghapus dari Google Sheets…':'Menyimpan ke Google Sheets…';let iv=0;
   const slow=MODE==='remote'?setTimeout(()=>{const paint=()=>{if(!$('#toast-root .err'))toast(lbl+' '+Math.floor((Date.now()-t0)/1000)+' detik')};paint();iv=setInterval(paint,1000)},700):0;
   const stop=()=>{clearTimeout(slow);clearInterval(iv)};
@@ -699,8 +658,7 @@ const ICON={
   dl:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
   trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
   edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>',
-  up:'<path d="M12 16V5M7 10l5-5 5 5M5 20h14"/>',
-  link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'};
+  up:'<path d="M12 16V5M7 10l5-5 5 5M5 20h14"/>'};
 const ic=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
 function greeting(h){return h<4?'Selamat malam':h<11?'Selamat pagi':h<15?'Selamat siang':h<18?'Selamat sore':'Selamat malam'}
 function vLogin(){const d=new Date();return`<section class="auth">
@@ -748,8 +706,7 @@ function renderHeader(){
   $('#av').textContent=(nm||(live?'?':'Pengguna Lokal')).trim().split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase()||'?';
   $('#sync').hidden=!(live&&storeState==='ready');$('#logout').hidden=!(live&&storeState==='ready');
   const counts={projects:scopedProjects().filter(isActive).length,meetings:scoped('meetings').filter(m=>m.date>=today()).length,vendors:S.vendors.filter(v=>inScope(v.projectId)).length,risks:scoped('risks').filter(rOpen).length};
-  if(DECK.unlocked)counts.decks=DECK.items.length;
-  $('#tabs').innerHTML=TABS.map(([k,l])=>`<button class="tab" role="tab" data-act="tab" data-k="${k}" aria-selected="${UI.tab===k}">${l}${k==='decks'&&!DECK.unlocked?`<svg class="tab-lock" viewBox="0 0 24 24" aria-label="terkunci"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`:counts[k]!=null&&storeState==='ready'?`<span class="ct">${counts[k]}</span>`:''}</button>`).join('');
+  $('#tabs').innerHTML=TABS.map(([k,l])=>`<button class="tab" role="tab" data-act="tab" data-k="${k}" aria-selected="${UI.tab===k}">${l}${counts[k]!=null&&storeState==='ready'?`<span class="ct">${counts[k]}</span>`:''}</button>`).join('');
   const sel=$('#scope');const cur=UI.scope;
   sel.innerHTML='<option value="all">Semua proyek</option>'+S.projects.slice().sort((a,b)=>(a.code||'').localeCompare(b.code||'')).map(p=>`<option value="${esc(p.id)}">${esc(p.code||'')} · ${esc(p.name)}</option>`).join('');
   if(cur!=='all'&&!proj(cur))UI.scope='all';
@@ -764,7 +721,7 @@ function render(){
   if(storeState==='loading'){main.innerHTML=(MODE==='remote'?'<p class="muted" style="margin:0 0 14px">Memuat data dari Google Sheets tim… biasanya 5–15 detik saat pertama dibuka.</p>':'')+'<div class="skel" aria-label="Memuat data"><div></div><div style="height:140px"></div><div style="height:260px"></div></div>';return}
   if(storeState==='login'){main.innerHTML=vLogin();const f=$('#login-form');f.addEventListener('submit',login);setTimeout(()=>{const i=SESSION.name?$('#lg-key'):$('#lg-name');i&&i.focus()},30);return}
   if(storeState==='error'){main.innerHTML=`<div class="panel"><div class="empty"><b>Data belum bisa dimuat.</b><span>${esc(errMsg)}</span><button class="btn pri" data-act="retry">Coba lagi</button></div></div>`;return}
-  const v0={overview:vOverview,projects:vProjects,timeline:vTimeline,meetings:vMeetings,vendors:vVendors,risks:vRisks,decks:vDecks};
+  const v0={overview:vOverview,projects:vProjects,timeline:vTimeline,meetings:vMeetings,vendors:vVendors,risks:vRisks};
   main.innerHTML=modeBanner()+exampleBanner()+v0[UI.tab]();
   if(MODE==='remote'&&lastSync)main.insertAdjacentHTML('beforeend',`<p class="faint" style="font-size:11.5px;margin-top:24px">Tersinkron dengan Google Sheets tim pukul ${pad(lastSync.getHours())}:${pad(lastSync.getMinutes())}. Data diperbarui otomatis setiap menit.</p>`);
   if(UI.projectOpen)renderDrawer();
@@ -973,83 +930,6 @@ function docBtns(d){const i=esc(d.id);return`<span class="d-acts"><button class=
 function docRow(d){const img=/^image\//.test(d.contentType||'');return`<div class="doc2"><span class="fi ${img?'img':''}">${img?'IMG':'PDF'}</span><div style="min-width:0"><button class="d-name" data-act="doc-view" data-id="${esc(d.id)}" title="${esc(d.name)}">${esc(d.name)}</button><div class="d-meta"><span class="chip">${esc(d.docType)}</span><span>${fmtSize(d.size||0)}</span>${d.uploadedAt?`<span>·</span><span>${fmtDS(String(d.uploadedAt).slice(0,10))}</span>`:''}${d.updatedBy?`<span>·</span><span>${esc(d.updatedBy)}</span>`:''}</div></div>${docBtns(d)}</div>`}
 
 /* ---------- risks ---------- */
-/* ---------------- Deck (password tambahan) ---------------- */
-const DECK={unlocked:false,pass:'',items:[],busy:false,err:''};
-const DECK_CAT=['Proposal','Pitch deck','Laporan / report','Materi presentasi','Lainnya'];
-function ssGet(k){try{return sessionStorage.getItem(k)}catch(e){return null}}
-function ssSet(k,v){try{if(v==null)sessionStorage.removeItem(k);else sessionStorage.setItem(k,v)}catch(e){}}
-function deckLock(){DECK.unlocked=false;DECK.pass='';DECK.items=[];DECK.err='';ssSet('pmo.deck',null)}
-async function deckUnlock(pass,quiet){DECK.busy=true;DECK.err='';if(!quiet)render();
-  try{DECK.items=await B.getDecks(pass)||[];DECK.pass=pass;DECK.unlocked=true;ssSet('pmo.deck',pass)}
-  catch(e){deckLock();DECK.err=e.code==='DECK_AUTH'?'Password salah. Coba lagi.':e.message;if(e.code==='AUTH')logout(e.message)}
-  finally{DECK.busy=false;render()}}
-async function deckCall(fn,...args){const t0=Date.now();let iv=0;const paint=()=>toast((fn==='deleteDeck'?'Menghapus':'Menyimpan')+' deck… '+Math.floor((Date.now()-t0)/1000)+' detik');
-  const sl=MODE==='remote'?setTimeout(()=>{paint();iv=setInterval(paint,1000)},600):0;
-  try{DECK.items=await B[fn](DECK.pass,...args)||[];return true}
-  catch(e){toast(e.message,true);if(e.code==='DECK_AUTH'){deckLock();render()}if(e.code==='AUTH')logout(e.message);return false}
-  finally{clearTimeout(sl);clearInterval(iv);render()}}
-function deckHost(u){try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return 'tautan'}}
-function vDecks(){
-  if(!DECK.unlocked){const saved=ssGet('pmo.deck');if(saved&&!DECK.busy){deckUnlock(saved,true);return'<div class="skel"><div></div></div>'}
-    return`<form class="panel deck-lock" id="deck-form" novalidate><span class="dl-ic" aria-hidden="true">${ic('lock')}</span><h2>Deck terkunci</h2><p class="muted">Ruang ini berisi proposal dan deck milik Rafael. Masukkan password untuk membuka.</p>
-    <div class="fld"><label for="deck-pass">Password</label><input id="deck-pass" type="password" autocomplete="current-password" placeholder="Password Deck"></div>
-    <div class="err" role="alert">${esc(DECK.err)}</div><button type="submit" class="btn pri auth-go" ${DECK.busy?'disabled':''}>${DECK.busy?'<span class="spin sm"></span>Memeriksa…':'Buka Deck'}</button></form>`}
-  const list=DECK.items.filter(d=>UI.scope==='all'||!d.projectId||d.projectId===UI.scope).sort((a,b)=>String(b.date||b.updatedAt||'').localeCompare(String(a.date||a.updatedAt||'')));
-  const cards=list.map(d=>{const pdf=d.kind!=='link';return`<article class="deck">
-    <div class="deck-top"><span class="deck-ic ${pdf?'pdf':'lnk'}">${pdf?'PDF':ic('link')}</span><div style="min-width:0"><h3>${esc(d.title||'Tanpa judul')}</h3><div class="d-meta"><span class="chip i">${esc(d.category||'Lainnya')}</span>${d.projectId?`<span class="code">${esc(pcode(d.projectId))}</span>`:''}${d.version?`<span>· ${esc(d.version)}</span>`:''}</div></div>
-      <span class="d-acts"><button class="icb" data-act="deck-edit" data-id="${esc(d.id)}" title="Edit" aria-label="Edit ${esc(d.title)}">${ic('edit')}</button><button class="icb danger" data-act="deck-del" data-id="${esc(d.id)}" title="Hapus" aria-label="Hapus ${esc(d.title)}">${ic('trash')}</button></span></div>
-    ${d.description?`<p class="deck-desc">${esc(d.description)}</p>`:''}
-    <div class="deck-foot"><span class="faint">${pdf?esc(d.name||'')+' · '+fmtSize(d.size||0):esc(deckHost(d.url))}${d.date?' · '+fmtDS(d.date):''}${d.updatedBy?' · '+esc(d.updatedBy):''}</span>
-      ${pdf?`<button class="btn sm pri" data-act="deck-open" data-id="${esc(d.id)}">${ic('eye')}Buka PDF</button>`:`<a class="btn sm pri" href="${esc(d.url)}" target="_blank" rel="noopener">${ic('link')}Buka link</a>`}</div></article>`}).join('');
-  return`<div class="toolbar"><h2>Deck &amp; proposal</h2><button class="btn" data-act="deck-lock">${ic('lock')}Kunci</button><button class="btn pri" data-act="deck-add">+ Deck</button></div>
-  ${list.length?`<div class="deck-grid">${cards}</div>`:`<section class="panel">${emptyBox(DECK.items.length?'Tidak ada deck untuk proyek yang dipilih.':'Belum ada deck. Tambahkan proposal atau deck dalam bentuk PDF atau link (Google Slides, Canva, OneDrive, dll).','<button class="btn pri" data-act="deck-add">+ Deck</button>')}</section>`}`}
-function openDeckForm(item){const d=Object.assign({kind:'pdf',category:'Proposal',date:today()},item||{});const isNew=!item;
-  $('#modal-root').innerHTML=`<div class="scrim" data-act="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="dt"><div class="mh"><h2 id="dt">${isNew?'Tambah':'Edit'} deck</h2><button class="btn ghost sm x" data-act="close-modal" aria-label="Tutup">✕</button></div>
-  <form id="dfrm" novalidate>
-    <div class="fld w2"><label for="dk-title">Judul *</label><input id="dk-title" value="${esc(d.title||'')}" placeholder="misal: Proposal EVP Rebranding 2026"></div>
-    <div class="fld"><label for="dk-cat">Kategori</label><select id="dk-cat">${DECK_CAT.map(c=>`<option ${c===d.category?'selected':''}>${c}</option>`).join('')}</select></div>
-    <div class="fld"><label for="dk-proj">Proyek (opsional)</label><select id="dk-proj"><option value="">Umum · tanpa proyek</option>${projOpts().map(([v,l])=>`<option value="${esc(v)}" ${v===d.projectId?'selected':''}>${esc(l)}</option>`).join('')}</select></div>
-    <div class="fld w2"><label>Jenis</label><div class="seg" role="radiogroup"><label><input type="radio" name="dk-kind" value="pdf" ${d.kind!=='link'?'checked':''}> File PDF</label><label><input type="radio" name="dk-kind" value="link" ${d.kind==='link'?'checked':''}> Link</label></div></div>
-    <div class="fld w2" id="dk-pdf"><label for="dk-file">File PDF ${isNew?'*':'(kosongkan bila tidak diganti)'}</label><input id="dk-file" type="file" accept="application/pdf,.pdf,image/png,image/jpeg">${!isNew&&d.kind!=='link'&&d.name?`<span class="hint">File saat ini: ${esc(d.name)}</span>`:''}</div>
-    <div class="fld w2" id="dk-link"><label for="dk-url">Link *</label><input id="dk-url" type="url" value="${esc(d.kind==='link'?d.url||'':'')}" placeholder="https://docs.google.com/presentation/…"></div>
-    <div class="fld"><label for="dk-ver">Versi</label><input id="dk-ver" value="${esc(d.version||'')}" placeholder="misal: v2 final"></div>
-    <div class="fld"><label for="dk-date">Tanggal</label><input id="dk-date" type="date" value="${esc(d.date||'')}"></div>
-    <div class="fld w2"><label for="dk-desc">Keterangan</label><textarea id="dk-desc">${esc(d.description||'')}</textarea></div>
-    <div class="mf"><button type="button" class="btn" data-act="close-modal">Batal</button><button type="submit" class="btn pri" id="dk-go">Simpan</button></div></form></div></div>`;
-  const sync=()=>{const k=$('#dfrm').elements['dk-kind'].value;$('#dk-pdf').hidden=k!=='pdf';$('#dk-link').hidden=k!=='link'};sync();
-  $('#dfrm').addEventListener('change',e=>{if(e.target.name==='dk-kind')sync()});
-  $('#dfrm').addEventListener('submit',async ev=>{ev.preventDefault();const f=ev.target,kind=f.elements['dk-kind'].value;
-    const meta={title:$('#dk-title').value.trim(),category:$('#dk-cat').value,projectId:$('#dk-proj').value,description:$('#dk-desc').value.trim(),version:$('#dk-ver').value.trim(),date:$('#dk-date').value};
-    if(!isNew)meta.id=item.id;if(!meta.title){toast('Isi judul deck.',true);$('#dk-title').focus();return}
-    const file=$('#dk-file').files[0],url=$('#dk-url').value.trim();
-    if(kind==='link'&&!/^https?:\/\//i.test(url)){toast('Isi link yang diawali https://',true);$('#dk-url').focus();return}
-    if(kind==='pdf'&&!file&&(isNew||d.kind==='link')){toast('Pilih file PDF.',true);return}
-    if(file&&file.size>10*1048576){toast('File melebihi 10 MB. Kompres PDF lalu unggah ulang.',true);return}
-    const go=$('#dk-go'),t0=Date.now();go.disabled=true;modalLock=true;const paint=()=>{go.innerHTML=`<span class="spin sm"></span>${file?'Mengunggah':'Menyimpan'}… ${Math.floor((Date.now()-t0)/1000)} detik`};paint();const iv=setInterval(paint,1000);
-    let ok=false;try{
-      if(kind==='pdf'&&file){let ct=file.type;if(!OK_TYPES[ct]){const ext=(file.name.split('.').pop()||'').toLowerCase();ct=ext==='pdf'?'application/pdf':ext==='png'?'image/png':(ext==='jpg'||ext==='jpeg')?'image/jpeg':''}
-        if(!ct)throw new Error('Format tidak didukung. Unggah PDF, PNG, atau JPG.');
-        const b64=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]||'');fr.onerror=()=>rej(new Error('File tidak terbaca.'));fr.readAsDataURL(file)});
-        DECK.items=await B.uploadDeck(DECK.pass,Object.assign(meta,{name:file.name,contentType:ct}),b64)||[];if(meta.id)delete blobCache['deck:'+meta.id]}
-      else{DECK.items=await B.saveDeck(DECK.pass,Object.assign(meta,{kind,url:kind==='link'?url:(d.url||'')}))||[]}
-      ok=true}
-    catch(e){toast(e.message,true);if(e.code==='DECK_AUTH'){deckLock()}if(e.code==='AUTH')logout(e.message)}
-    finally{clearInterval(iv);modalLock=false}
-    if(ok){closeModal();toast('Deck tersimpan')}else{go.disabled=false;go.textContent='Simpan'}render()});
-  setTimeout(()=>$('#dk-title').focus(),30)}
-async function openDeckPdf(id){const d=DECK.items.find(x=>x.id===id);if(!d)return;const key='deck:'+id,img=/^image\//.test(d.contentType||'');
-  $('#modal-root').innerHTML=`<div class="scrim" data-act="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="vt" style="max-width:960px"><div class="mh"><h2 id="vt" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(d.title)}</h2><span id="vw-acts" style="margin-left:auto;display:flex;gap:6px"></span><button class="btn ghost sm" data-act="close-modal" aria-label="Tutup">✕</button></div>
-  <div id="vw-body" style="padding:12px;background:var(--surface-2);min-height:200px;display:grid;place-items:center"></div>
-  <div style="padding:10px 16px;font-size:12px;color:var(--muted)">${esc(d.category||'')} · ${esc(d.name||'')} · ${fmtSize(d.size||0)}${d.version?' · '+esc(d.version):''}</div></div></div>`;
-  const t0=Date.now(),paint=()=>{const bd=$('#vw-body');if(bd&&!bd.querySelector('iframe,img'))bd.innerHTML=progHTML({t0},d)};paint();const iv=setInterval(paint,1000);
-  try{let url=blobCache[key];
-    if(!url){let blob=MODE==='remote'?await DocCache.get(key):null;
-      if(!blob){const f=await B.getDeckFile(DECK.pass,id);blob=await (await fetch('data:'+(f.contentType||d.contentType||'application/pdf')+';base64,'+f.b64)).blob();if(MODE==='remote')DocCache.put(key,blob)}
-      url=URL.createObjectURL(blob);blobCache[key]=url}
-    clearInterval(iv);if(!$('#vw-body'))return;
-    $('#vw-acts').innerHTML=`<a class="btn sm" href="${url}" target="_blank" rel="noopener">Buka di tab baru</a><a class="btn sm" href="${url}" download="${esc(d.name||'deck.pdf')}">Unduh</a>`;
-    $('#vw-body').innerHTML=img?`<img src="${url}" alt="${esc(d.title)}" style="display:block;margin:0 auto;max-height:75vh">`:`<iframe src="${url}" title="${esc(d.title)}" style="width:100%;height:75vh;border:0;border-radius:6px;background:var(--surface)"></iframe>`}
-  catch(e){clearInterval(iv);const b=$('#vw-body');if(b)b.innerHTML=`<span style="color:var(--r)">${esc(e.message)}</span>`;if(e.code==='DECK_AUTH'){deckLock();render()}if(e.code==='AUTH')logout(e.message)}}
 function vRisks(){
   const rs=scoped('risks');const open=rs.filter(rOpen);
   let list=rs.slice();if(UI.riskCell){const[i,l]=UI.riskCell.split('-').map(Number);list=list.filter(r=>+r.impact===i&&+r.likelihood===l&&rOpen(r))}
@@ -1181,7 +1061,6 @@ function renderUploads(){let root=$('#upload-root');if(!root){root=document.crea
     return`<div class="upi ${u.state}"><div class="upi-top"><span class="fi ${/^image\//.test(u.ct)?'img':''}">${/^image\//.test(u.ct)?'IMG':'PDF'}</span><div class="upi-name"><b title="${esc(u.file.name)}">${esc(u.file.name)}</b><span>${esc(u.vendorName)} · ${fmtSize(u.file.size)}</span></div><span class="upi-pct">${u.state==='done'?'✓':u.state==='error'?'!':pct+'%'}</span></div>
     <div class="upi-bar"><i style="width:${pct}%"></i></div><div class="upi-st">${st}${u.state==='error'?` <button class="link" data-act="up-retry" data-id="${u.id}">Coba lagi</button>`:''}${u.state==='send'&&MODE==='remote'?`<span class="faint"> · perkiraan ±${fmtSecs(upEstimate(u.file.size))}</span>`:''}</div></div>`}).join('');
   root.innerHTML=`<div class="upw" role="status" aria-live="polite"><div class="upw-h"><b>${head}</b><span class="upw-acts"><button class="ibtn sm" data-act="up-toggle" aria-label="${upCollapsed?'Tampilkan':'Ciutkan'}">${upCollapsed?'▴':'▾'}</button>${active?'':'<button class="ibtn sm" data-act="up-close" aria-label="Tutup">✕</button>'}</span></div>${upCollapsed?'':`<div class="upw-list">${rows}</div>`}${active&&!upCollapsed?'<div class="upw-f">Proses unggah sedang berlangsung. Anda dapat melanjutkan aktivitas lainnya tanpa menutup halaman ini.</div>':''}</div>`}
-document.addEventListener('submit',e=>{if(e.target&&e.target.id==='deck-form'){e.preventDefault();const v=$('#deck-pass').value;if(!v){DECK.err='Masukkan password.';return render()}deckUnlock(v)}});
 window.addEventListener('beforeunload',e=>{if(UPQ.some(x=>x.state==='wait'||x.state==='read'||x.state==='send')){e.preventDefault();e.returnValue=''}});
 /* ---------- dokumen: cache permanen di browser + unduh dengan progres ---------- */
 const blobCache={},docJobs={};
@@ -1267,11 +1146,6 @@ document.addEventListener('click',async e=>{
   if(a==='cal-day'){UI.calDay=k&&UI.calDay!==k?k:null;return render()}
   if(a==='risk-cell'){UI.riskCell=k&&UI.riskCell!==k?k:null;return render()}
   if(a==='upload')return openUpload(id);
-  if(a==='deck-lock'){deckLock();toast('Deck dikunci');return render()}
-  if(a==='deck-add')return openDeckForm(null);
-  if(a==='deck-edit'){const d=DECK.items.find(x=>x.id===id);if(d)openDeckForm(d);return}
-  if(a==='deck-open')return openDeckPdf(id);
-  if(a==='deck-del'){const d=DECK.items.find(x=>x.id===id);if(!d)return;return confirmBox('Hapus deck?',`<b>${esc(d.title)}</b> akan dihapus${d.kind!=='link'&&MODE==='remote'?' dan file PDF-nya dipindahkan ke Sampah Google Drive':''}.`,'Hapus',async()=>{if(await deckCall('deleteDeck',id)){DocCache.del('deck:'+id);toast('Deck dihapus')}})}
   if(a==='up-toggle'){upCollapsed=!upCollapsed;return renderUploads()}
   if(a==='up-close'){for(let i=UPQ.length-1;i>=0;i--)if(UPQ[i].state==='done'||UPQ[i].state==='error')UPQ.splice(i,1);return renderUploads()}
   if(a==='up-retry'){const u=UPQ.find(x=>x.id===id);if(u){u.state='wait';u.err='';u.t0=0;u.t1=0;renderUploads();pumpUploads()}return}
