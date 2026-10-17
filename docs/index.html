@@ -391,6 +391,8 @@ button.hc.sel{border-color:var(--ink)}
 .dl-simple{display:flex;align-items:center;gap:14px;padding:18px}
 .dl-simple b{display:block;font-size:14px;font-weight:600}
 .dl-simple span:not(.spin){display:block;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+#cf-ok[disabled]{opacity:1;cursor:progress}
+.spin.sm{width:14px;height:14px;border-width:2px;border-color:rgba(255,255,255,.35);border-top-color:#fff;display:inline-block;vertical-align:-2px;margin-right:8px}
 .spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--accent-soft);border-top-color:var(--accent);flex:none;animation:spin .8s linear infinite}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
 
@@ -624,7 +626,10 @@ async function poll(){
 }
 async function sync(){const b=$('#sync');if(b){b.disabled=true;b.classList.add('spin')}try{applyData(await B.getAll());toast('Data terbaru dimuat')}catch(e){toast(e.message,true);if(e.code==='AUTH')logout(e.message)}finally{const b2=$('#sync');if(b2){b2.disabled=false;b2.classList.remove('spin')}}}
 function logout(msg){SESSION.key='';lsSet('pmo.key',null);lsSet('pmo.cache',null);if(typeof DocCache!=='undefined')DocCache.clear();COLS.forEach(c=>S[c]=[]);storeState='login';errMsg=msg||'';UI.projectOpen=null;$('#drawer-root').innerHTML='';closeModal();render()}
-async function call(fn,...args){busy++;const slow=MODE==='remote'?setTimeout(()=>{if(!$('#toast-root .err'))toast(fn==='uploadDocument'?'Mengunggah ke Google Drive…':'Menyimpan ke Google Sheets…')},700):0;try{applyData(await B[fn](...args));clearTimeout(slow);return true}catch(e){clearTimeout(slow);toast(e.message,true);if(e.code==='AUTH')logout(e.message);return false}finally{busy--}}
+async function call(fn,...args){busy++;const t0=Date.now(),lbl=fn==='uploadDocument'?'Mengunggah ke Google Drive…':/delete|clear/i.test(fn)?'Menghapus dari Google Sheets…':'Menyimpan ke Google Sheets…';let iv=0;
+  const slow=MODE==='remote'?setTimeout(()=>{const paint=()=>{if(!$('#toast-root .err'))toast(lbl+' '+Math.floor((Date.now()-t0)/1000)+' detik')};paint();iv=setInterval(paint,1000)},700):0;
+  const stop=()=>{clearTimeout(slow);clearInterval(iv)};
+  try{applyData(await B[fn](...args));stop();return true}catch(e){stop();toast(e.message,true);if(e.code==='AUTH')logout(e.message);return false}finally{busy--}}
 async function login(ev){ev.preventDefault();const f=ev.target;const name=f.elements['lg-name'].value.trim(),key=f.elements['lg-key'].value.trim().toUpperCase();
   const er=$('#lg-err');if(!name||!key){er.textContent='Isi nama dan kode akses.';return}
   const btn=f.querySelector('[type=submit]');btn.disabled=true;btn.textContent='Menghubungkan ke Google…';er.textContent='';
@@ -980,9 +985,13 @@ function openForm(col,item,preset){
     if(await put(col,item&&item.id,out)){closeModal();toast(sc.t+' tersimpan')}else btn.disabled=false;
   });
 }
+let modalLock=false;
 function confirmBox(title,msg,okLabel,fn){
   $('#modal-root').innerHTML=`<div class="scrim" data-act="scrim"><div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="ct" style="max-width:460px"><div class="mh"><h2 id="ct">${esc(title)}</h2></div><div style="padding:16px 20px;color:var(--muted)">${msg}</div><div class="mf" style="padding:14px 20px"><button class="btn" data-act="close-modal">Batal</button><button class="btn pri" id="cf-ok" style="background:var(--r);border-color:var(--r);color:#fff">${esc(okLabel)}</button></div></div></div>`;
-  $('#cf-ok').addEventListener('click',async e=>{e.currentTarget.disabled=true;await fn();closeModal()});
+  $('#cf-ok').addEventListener('click',async e=>{const ok=e.currentTarget,t0=Date.now();const verb=/^Hapus/.test(okLabel)?'Menghapus':'Memproses';
+    modalLock=true;ok.disabled=true;const cancel=$('#modal-root [data-act="close-modal"]');if(cancel)cancel.disabled=true;
+    const paint=()=>{ok.innerHTML=`<span class="spin sm" aria-hidden="true"></span>${verb}… ${Math.floor((Date.now()-t0)/1000)} detik`};paint();const iv=setInterval(paint,1000);
+    try{await fn()}finally{clearInterval(iv);modalLock=false;closeModal()}});
 }
 
 /* ---------- upload ---------- */
@@ -1108,7 +1117,7 @@ function setTab(k){if(storeState!=='ready')return;UI.tab=k;lsSet('pmo.tab',k);tr
 document.addEventListener('click',async e=>{
   const el=e.target.closest('[data-act]');if(!el)return;
   const a=el.dataset.act,id=el.dataset.id,c=el.dataset.c,k=el.dataset.k;
-  if(a==='scrim'){if(e.target===el)closeModal();return}
+  if(a==='scrim'){if(e.target===el&&!modalLock)closeModal();return}
   if(a==='tab')return setTab(k);
   if(a==='close-modal')return closeModal();
   if(a==='open-project'){UI.projectOpen=id;renderDrawer();return}
@@ -1141,7 +1150,7 @@ document.addEventListener('change',e=>{
   if(e.target.id==='doc-type'){UI.docType=e.target.value;render()}
 });
 let qT=0;document.addEventListener('input',e=>{if(e.target.id==='doc-q'){clearTimeout(qT);const v=e.target.value;qT=setTimeout(()=>{UI.docQ=v;render();const i=$('#doc-q');if(i){i.focus();i.setSelectionRange(v.length,v.length)}},250)}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#modal-root').innerHTML)closeModal();else if(UI.projectOpen){UI.projectOpen=null;$('#drawer-root').innerHTML=''}}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(modalLock)return;if($('#modal-root').innerHTML)closeModal();else if(UI.projectOpen){UI.projectOpen=null;$('#drawer-root').innerHTML=''}}});
 /* drag & drop onto vendor cards */
 document.addEventListener('dragover',e=>{const c=e.target.closest&&e.target.closest('[data-drop]');if(c&&assets){e.preventDefault();document.querySelectorAll('.vcard.drag').forEach(x=>x!==c&&x.classList.remove('drag'));c.classList.add('drag')}});
 document.addEventListener('dragleave',e=>{const c=e.target.closest&&e.target.closest('[data-drop]');if(c&&!c.contains(e.relatedTarget))c.classList.remove('drag')});
