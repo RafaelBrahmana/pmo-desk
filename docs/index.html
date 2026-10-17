@@ -66,14 +66,43 @@ button,input,select,textarea{font:inherit;color:inherit}
 .brand{min-width:0}
 .brand h1{font-size:17px;font-weight:600;color:var(--band-ink);letter-spacing:-.01em;line-height:1.25}
 .brand p{margin:0;font-size:12px;color:var(--band-muted)}
-.band-tools{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.today{font-family:var(--f-mono);font-size:12px;color:var(--band-muted);padding:6px 10px;border:1px solid var(--band-line);border-radius:6px}
-.mode{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:6px;border:1px solid var(--band-line);color:var(--band-muted)}
-.mode.live{color:var(--g);border-color:transparent;background:var(--g-soft)}
+.band-tools{margin-left:auto;display:flex;gap:12px;align-items:center}
+.clock{display:flex;align-items:center;gap:10px;height:42px;padding:0 14px 0 12px;border-radius:10px;background:var(--surface-2);border:1px solid var(--band-line)}
+.clock-ic{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.clock-txt{display:grid;line-height:1.15}
+.clock-t{font-size:15px;font-weight:600;color:var(--band-ink);font-variant-numeric:tabular-nums;letter-spacing:.01em;display:flex;align-items:baseline;gap:5px}
+.clock-t .tz{font-size:10px;font-weight:600;color:var(--accent);letter-spacing:.06em}
+.clock-d{font-size:11px;color:var(--band-muted);white-space:nowrap}
+.vsep{width:1px;height:30px;background:var(--band-line);flex:none}
+.who{display:flex;align-items:center;gap:10px;height:42px}
+.av{position:relative;width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:600;font-size:13px;flex:none}
+.av::after{content:"";position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:var(--a);border:2px solid var(--band)}
+.who.live .av::after{background:var(--g)}
+.who-txt{display:grid;line-height:1.2;min-width:0}
+.who-txt b{font-size:13px;font-weight:600;color:var(--band-ink);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mode{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;color:var(--band-muted)}
+.mode i{width:7px;height:7px;border-radius:50%;background:var(--a);flex:none}
+.mode.live i{background:var(--g);box-shadow:0 0 0 3px var(--g-soft)}
+.ibtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;min-width:38px;padding:0 10px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--band-ink);cursor:pointer;font-weight:500;font-size:13px}
+.ibtn svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ibtn:hover{border-color:var(--accent);color:var(--accent)}
+.ibtn.out{padding:0 12px}
+.ibtn[disabled]{opacity:.6;cursor:progress}
+.ibtn.spin svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.ibtn.spin svg{animation:none}}
+.tabrow{display:flex;align-items:flex-end;gap:16px}
+.tabrow .tabs{flex:1;min-width:0}
+.scope-wrap{display:flex;align-items:center;gap:8px;padding-bottom:7px;flex:none}
+.scope-wrap label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--band-muted)}
+@media (max-width:1180px){.clock-d{display:none}.clock{height:38px}.brand p{display:none}.logo img{height:26px}.ibtn.out span{display:none}.ibtn.out{padding:0 10px}.scope-wrap label{display:none}.scope-wrap .scope{max-width:190px}}
+@media (max-width:860px){.band-top{row-gap:10px}.band-tools{margin-left:0;width:100%;justify-content:flex-start}.clock{margin-right:auto}.vsep{display:none}.tabrow{flex-direction:column-reverse;align-items:stretch;gap:0}.scope-wrap{padding:0 0 4px;min-width:0}.scope-wrap .scope{flex:1;min-width:0;width:100%;max-width:none}}
+@media (max-width:560px){.who-txt{display:none}.band-tools{gap:8px}.clock{flex:1;min-width:0;padding:0 10px}.ibtn.out span{display:none}.ibtn.out{padding:0 10px}}
 .login{max-width:420px;margin:48px auto;display:grid;gap:14px}
 .login .fld input{border:1px solid var(--line-2);background:var(--surface);border-radius:6px;padding:10px 12px;width:100%}
 .err{color:var(--r);font-size:13px;min-height:1.2em}
-.scope{background:var(--band-2);color:var(--band-ink);border:1px solid var(--band-line);border-radius:6px;padding:6px 10px;max-width:260px}
+.scope{background:var(--surface);color:var(--band-ink);border:1px solid var(--line-2);border-radius:10px;height:36px;padding:0 12px;max-width:280px;font-size:13px;cursor:pointer}
+.scope:hover{border-color:var(--accent)}
 .tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-bottom:-1px}
 .tabs::-webkit-scrollbar{display:none}
 .tab{background:none;border:0;border-bottom:3px solid transparent;color:var(--band-muted);padding:10px 14px;cursor:pointer;white-space:nowrap;font-weight:500;display:flex;gap:8px;align-items:center}
@@ -326,16 +355,23 @@ button.hc.sel{border-color:var(--ink)}
       <span class="sep" aria-hidden="true"></span>
       <div class="brand"><h1>Project Management Dashboard</h1><p>Project Portfolio, Coordination &amp; Monitoring · Talent Partnership Intern</p></div>
       <div class="band-tools">
-        <label for="scope" class="eyebrow" style="color:var(--band-muted)">Fokus</label>
-        <select id="scope" class="scope"><option value="all">Semua proyek</option></select>
-        <span class="today" id="today"></span>
-        <span class="mode" id="mode"></span>
-        <span class="today" id="who" hidden></span>
-        <button class="btn sm" id="sync" data-act="sync" hidden style="background:var(--surface);color:var(--band-ink);border-color:var(--line-2)">Muat ulang</button>
-        <button class="btn sm" id="logout" data-act="logout" hidden style="background:var(--surface);color:var(--band-ink);border-color:var(--line-2)">Keluar</button>
+        <div class="clock" title="Waktu lokal perangkat Anda">
+          <svg class="clock-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <div class="clock-txt"><span class="clock-t"><span id="clk-t">--:--:--</span><span class="tz" id="clk-z"></span></span><span class="clock-d" id="clk-d"></span></div>
+        </div>
+        <span class="vsep" aria-hidden="true"></span>
+        <div class="who" id="who-box">
+          <span class="av" id="av" aria-hidden="true"></span>
+          <div class="who-txt"><b id="who-name"></b><span class="mode" id="mode"><i></i><span id="mode-l"></span></span></div>
+        </div>
+        <button class="ibtn" id="sync" data-act="sync" hidden title="Muat ulang data" aria-label="Muat ulang data"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
+        <button class="ibtn out" id="logout" data-act="logout" hidden title="Keluar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/></svg><span>Keluar</span></button>
       </div>
     </div>
-    <nav class="tabs" role="tablist" id="tabs"></nav>
+    <div class="tabrow">
+      <nav class="tabs" role="tablist" id="tabs"></nav>
+      <div class="scope-wrap"><label for="scope">Fokus</label><select id="scope" class="scope"><option value="all">Semua proyek</option></select></div>
+    </div>
   </div>
 </header>
 <main class="wrap" id="main"></main>
@@ -495,7 +531,7 @@ async function poll(){
     if(ae&&$('#main').contains(ae)&&/INPUT|SELECT|TEXTAREA/.test(ae.tagName)){COLS.forEach(c=>S[c]=d[c]||[]);return}
     applyData(d)}catch(e){if(e.code==='AUTH'){logout(e.message)}}
 }
-async function sync(){const b=$('#sync');if(b){b.disabled=true;b.textContent='Memuat…'}try{applyData(await B.getAll());toast('Data terbaru dimuat')}catch(e){toast(e.message,true);if(e.code==='AUTH')logout(e.message)}finally{const b2=$('#sync');if(b2){b2.disabled=false;b2.textContent='Muat ulang'}}}
+async function sync(){const b=$('#sync');if(b){b.disabled=true;b.classList.add('spin')}try{applyData(await B.getAll());toast('Data terbaru dimuat')}catch(e){toast(e.message,true);if(e.code==='AUTH')logout(e.message)}finally{const b2=$('#sync');if(b2){b2.disabled=false;b2.classList.remove('spin')}}}
 function logout(msg){SESSION.key='';lsSet('pmo.key',null);lsSet('pmo.cache',null);COLS.forEach(c=>S[c]=[]);storeState='login';errMsg=msg||'';UI.projectOpen=null;$('#drawer-root').innerHTML='';closeModal();render()}
 async function call(fn,...args){busy++;const slow=MODE==='remote'?setTimeout(()=>{if(!$('#toast-root .err'))toast(fn==='uploadDocument'?'Mengunggah ke Google Drive…':'Menyimpan ke Google Sheets…')},700):0;try{applyData(await B[fn](...args));clearTimeout(slow);return true}catch(e){clearTimeout(slow);toast(e.message,true);if(e.code==='AUTH')logout(e.message);return false}finally{busy--}}
 async function login(ev){ev.preventDefault();const f=ev.target;const name=f.elements['lg-name'].value.trim(),key=f.elements['lg-key'].value.trim().toUpperCase();
@@ -518,11 +554,18 @@ async function del(col,id){return call('deleteItems',[{col,id}])}
 let tt=0;function toast(msg,err){const r=$('#toast-root');r.innerHTML=`<div class="toast${err?' err':''}" role="status">${esc(msg)}</div>`;clearTimeout(tt);tt=setTimeout(()=>{r.innerHTML=''},err?5200:2600)}
 
 /* ---------- header ---------- */
+const HARI=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+function tzLabel(d){const o=-d.getTimezoneOffset()/60;return o===7?'WIB':o===8?'WITA':o===9?'WIT':'GMT'+(o>=0?'+':'')+o}
+function tick(){const d=new Date(),t=$('#clk-t');if(!t)return;t.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  $('#clk-z').textContent=tzLabel(d);$('#clk-d').textContent=HARI[d.getDay()]+', '+d.getDate()+' '+MONTHS_L[d.getMonth()]+' '+d.getFullYear()}
+tick();setInterval(tick,1000);
 function renderHeader(){
-  const md=$('#mode');md.textContent=MODE==='remote'?'Mode tim':'Mode demo';md.className='mode'+(MODE==='remote'?' live':'');md.title=MODE==='remote'?'Data tersimpan di Google Sheets tim':'Data hanya tersimpan di browser ini';
-  const w=$('#who');w.textContent=SESSION.name;w.hidden=!(SESSION.name&&storeState==='ready');
-  $('#sync').hidden=!(MODE==='remote'&&storeState==='ready');$('#logout').hidden=!(MODE==='remote'&&storeState==='ready');
-  const t=new Date();$('#today').textContent=DOW[(t.getDay()+6)%7]+', '+t.getDate()+' '+MONTHS[t.getMonth()]+' '+t.getFullYear();
+  const live=MODE==='remote',md=$('#mode');md.className='mode'+(live?' live':'');$('#mode-l').textContent=live?'Mode tim':'Mode demo';$('#who-box').className='who'+(live?' live':'');
+  md.title=live?'Data tersimpan di Google Sheets tim':'Data hanya tersimpan di browser ini';
+  const nm=live&&storeState==='ready'?SESSION.name:'';$('#who-name').textContent=nm||(live?'Belum masuk':'Pengguna lokal');
+  $('#who-box').title=(nm?nm+' · ':'')+(live?'Mode tim: data tersimpan di Google Sheets':'Mode demo: data hanya di browser ini');
+  $('#av').textContent=(nm||(live?'?':'Pengguna Lokal')).trim().split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase()||'?';
+  $('#sync').hidden=!(live&&storeState==='ready');$('#logout').hidden=!(live&&storeState==='ready');
   const counts={projects:scopedProjects().filter(isActive).length,meetings:scoped('meetings').filter(m=>m.date>=today()).length,vendors:S.vendors.filter(v=>inScope(v.projectId)).length,risks:scoped('risks').filter(rOpen).length};
   $('#tabs').innerHTML=TABS.map(([k,l])=>`<button class="tab" role="tab" data-act="tab" data-k="${k}" aria-selected="${UI.tab===k}">${l}${counts[k]!=null&&storeState==='ready'?`<span class="ct">${counts[k]}</span>`:''}</button>`).join('');
   const sel=$('#scope');const cur=UI.scope;
